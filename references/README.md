@@ -76,9 +76,13 @@ Language Models [[arXiv](https://arxiv.org/abs/2210.16257)]
 * Сборники задач на русском языке [[problems.ru\]](https://problems.ru/)
 * Сборники задач на английском языке [[hendrycks-math-dataset](https://github.com/hendrycks/math?tab=readme-ov-file) | [google-deepmind-math-dataset](https://github.com/google-deepmind/mathematics_dataset)]
 
-# Книги
+# Книги | Курсы
 * Antonio Gulli. Agentic Design Patterns: A Hands-On Guide to Building Intelligent Systems Antonio Gulli [[Английский-Source](https://docs.google.com/document/d/1rsaK53T3Lg5KoGwvf8ukOUvbELRtH-V0LnOIFDxBryE/preview?tab=t.0) | [Английский-in-PDF](https://t.me/alexgladkovblog/5820) | [Русский](https://github.com/pridees/agentic-design-patterns-book-rus?tab=readme-ov-file)]
 * Chip Huyen. AI Engineering: Building Applications with Foundation Models [[PDF](https://t.me/Artifical_Intelligence_25/2086)]
+* Agentic AI Crash Course [[GitHub](https://github.com/aishwaryanr/awesome-generative-ai-guide/tree/main/free_courses/agentic_ai_crash_course)]
+* Agent Skills for Context Engineering [[GitHub](https://github.com/muratcankoylan/Agent-Skills-for-Context-Engineering)]
+* LangChain Academy [[GitHub](https://academy.langchain.com/collections?page=2)]
+* Chip Huyen. Agents [[Chip Huyen Blog](https://huyenchip.com/2025/01/07/agents.html)]
 
 # Заметки
 
