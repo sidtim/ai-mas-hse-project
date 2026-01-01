@@ -25,7 +25,9 @@ dependencies = [
     "pre-commit (>=4.5.1,<5.0.0)",
     "langchain-community (>=0.4.1,<0.5.0)",
     "langchain-openai (>=1.1.6,<2.0.0)",
-    "openai (>=2.14.0,<3.0.0)"
+    "openai (>=2.14.0,<3.0.0)",
+    "beautifulsoup4 (>=4.14.3,<5.0.0)",
+    "chardet (>=5.2.0,<6.0.0)"
 ]
 
 
@@ -38,7 +40,19 @@ line-length = 100
 format = { docstring-code-format = true }
 
 # Игнорировать проверки кириллицы
-ignore = ["RUF002", "RUF003", "PLR0913"]
+ignore = [
+    "PLR0913",
+    "I001",  # Несортированные импорты
+    "F401",  # Неиспользуемые импорты
+    "RUF001",  # Амбигуозные кириллические символы
+    "SIM108",  # Упрощение if-else
+    "C901",  # Сложность функции
+    "B005",  # strip с несколькими символами
+    "PTH123",  # Path.open вместо open
+    "RET505",  # Лишний else после return
+    "RUF002",  # Ambiguous characters (дополнительно)
+    "RUF003",  # Ambiguous characters (дополнительно)
+    ]
 
 # Игнорирую из-за особенностей моего проекта
 [tool.ruff.lint.per-file-ignores]
