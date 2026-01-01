@@ -38,8 +38,8 @@
 * Measuring Mathematical Problem Solving With the MATH Dataset [[arXiv](https://arxiv.org/abs/2103.03874)] <details><summary>Summary</summary>
    1. В параграфах №1 и №2 освещаются следующие темы:
         * Говорится про Asymptote Language с помощью которого можно решать геометрические задачи.
-
 </details>
+
 * AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation [[arXiv](https://arxiv.org/abs/2308.08155)]
 * Distilling Tool Knowledge into Language Models via Back-Translated Traces [[arXiv](https://arxiv.org/abs/2506.19171)]
 * From LLM Reasoning to Autonomous AI Agents: A Comprehensive Review [[arXiv](https://arxiv.org/abs/2504.19678)] - _в этой статье есть обзорный список большого числа метрик для LLM в различных прикладных задачах, в т.ч. и математических. Также есть обзор метрик для AI-агентов. ОБЯЗАТЕЛЬНО К ПРОЧТЕНИЮ!_
