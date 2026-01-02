@@ -20,7 +20,7 @@ def fetch_html(url):
         return None
 
 
-def parse_problem(html_content):
+def parse_problem(html_content, main_topic):
     """
     Парсинг задачи с сайта problems.ru
     """
@@ -38,7 +38,8 @@ def parse_problem(html_content):
 
     result = {
         "id": None,
-        "topic": "unknown",
+        "topic": main_topic,
+        "subtopic": "unknown",
         "complexity_level": None,  # Новое поле для сложности
         "problem": "",
         "solution": "",
@@ -60,7 +61,7 @@ def parse_problem(html_content):
             "a", href=re.compile(r"/view_by_subject_new\.php\?parent=\d+")
         )
         if topic_link:
-            result["topic"] = clean_text(topic_link.get_text())
+            result["subtopic"] = clean_text(topic_link.get_text())
 
     # 3. Сложность задачи (НОВОЕ ПОЛЕ)
     # Ищем блок со сложностью
@@ -125,7 +126,7 @@ def parse_problem(html_content):
             break
 
     # Очищаем все текстовые поля
-    for field in ["topic", "problem", "solution", "answer"]:
+    for field in ["subtopic", "problem", "solution", "answer"]:
         result[field] = clean_text(result[field])
 
     return result
@@ -148,13 +149,13 @@ def parse_problem_from_url(url):
     return None
 
 
-def parse_problem_from_file(filename="test.html", encoding="utf-8"):
+def parse_problem_from_file(filename="test.html", main_topic="algebra", encoding="utf-8"):
     """Парсинг задачи из локального HTML-файла"""
     try:
         with open(filename, "r", encoding=encoding) as f:
             html_content = f.read()
 
-        parsed_data = parse_problem(html_content)
+        parsed_data = parse_problem(html_content, main_topic=main_topic)
 
         # Сохраняем результат
         save_to_json(parsed_data, "output_from_file.json")
