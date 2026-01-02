@@ -122,3 +122,6 @@ checkpoints/
 
 # MLFlow
 /mlflow.db
+
+# JSON
+**/*.json
