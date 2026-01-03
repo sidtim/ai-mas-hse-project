@@ -20,6 +20,153 @@ def fetch_html(url):
         return None
 
 
+def parse_raw_problem(html_content, main_topic):
+    """
+    Парсинг задачи с сайта problems.ru с сохранением сырого HTML
+    """
+    soup = BeautifulSoup(html_content, "html.parser")
+
+    def clean_text(text):
+        """Очистка текста от неразрывных пробелов и лишних пробелов"""
+        if not text:
+            return ""
+        # Заменяем \xa0 на обычные пробелы
+        text = re.sub(r"[\xa0\u00A0]", " ", text)
+        # Убираем лишние пробелы
+        text = " ".join(text.split())
+        return text.strip(";&nbsp;. \n\t\r")
+
+    def get_raw_html_until_next_h3(start_element):
+        """
+        Получить сырой HTML от start_element до следующего тега h3
+
+        Args:
+            start_element: BeautifulSoup элемент, с которого начинается извлечение
+
+        Returns:
+            str: сырой HTML
+        """
+        html_parts = []
+        current = start_element
+
+        # Собираем все элементы до следующего h3
+        while current and (
+            not hasattr(current, "name") or (hasattr(current, "name") and current.name != "h3")
+        ):
+            # Добавляем сырой HTML элемента
+            if hasattr(current, "__str__"):
+                html_parts.append(str(current))
+
+            # Переходим к следующему элементу
+            current = current.next_sibling
+
+        return "".join(html_parts)
+
+    result = {
+        "id": None,
+        "topic": main_topic,
+        "subtopic": "unknown",
+        "complexity_level": None,
+        "problem": "",  # СЫРОЙ HTML условия
+        "solution": "",  # СЫРОЙ HTML решения
+        "answer": "",  # СЫРОЙ HTML ответа
+    }
+
+    # 1. ID задачи
+    header_div = soup.find("div", class_="componentboxheader")
+    if header_div:
+        text = header_div.get_text(strip=True)
+        match = re.search(r"Задача\s*(\d+)", text)
+        if match:
+            result["id"] = int(match.group(1))
+
+    # 2. Тема
+    subject_table = soup.find("table", class_="problemdetailssubjecttable")
+    if subject_table:
+        topic_link = subject_table.find(
+            "a", href=re.compile(r"/view_by_subject_new\.php\?parent=\d+")
+        )
+        if topic_link:
+            result["subtopic"] = clean_text(topic_link.get_text())
+
+    # 3. Сложность задачи
+    difficulty_cell = soup.find("td", class_="problemdetailsdifficulty")
+    if difficulty_cell:
+        difficulty_text = difficulty_cell.get_text(strip=True)
+        complexity_match = re.search(r"Сложность:\s*([\d\+\-]+)", difficulty_text)
+        if complexity_match:
+            result["complexity_level"] = complexity_match.group(1)
+        else:
+            lines = difficulty_text.split("\n")
+            for line in lines:
+                if "Сложность:" in line:
+                    parts = line.split("Сложность:")
+                    if len(parts) > 1:
+                        result["complexity_level"] = clean_text(parts[1])
+                    break
+
+    # 4. Классы
+    if difficulty_cell:
+        classes_match = re.search(r"Классы:\s*([\d,]+)", difficulty_cell.get_text(strip=True))
+        if classes_match:
+            classes_str = classes_match.group(1)
+            # Можно добавить в результат если нужно
+            # result["classes"] = [int(c.strip()) for c in classes_str.split(',')]
+            pass
+
+    # 5. Условие - сохраняем СЫРОЙ HTML
+    for h3 in soup.find_all("h3"):
+        if h3.get_text(strip=True) == "Условие":
+            next_element = h3.next_sibling
+
+            # Собираем сырой HTML до следующего h3
+            raw_html = get_raw_html_until_next_h3(next_element)
+
+            # Сохраняем сырой HTML в поле problem
+            result["problem"] = raw_html
+
+            # Также можно сохранить очищенный текст в отдельное поле, если нужно
+            # result["problem_text"] = clean_text(raw_html)
+            break
+
+    # 6. Решение - сохраняем СЫРОЙ HTML
+    for h3 in soup.find_all("h3"):
+        if "решение" in h3.get_text(strip=True).lower():
+            next_element = h3.next_sibling
+
+            # Собираем сырой HTML до следующего h3
+            raw_html = get_raw_html_until_next_h3(next_element)
+
+            # Сохраняем сырой HTML в поле solution
+            result["solution"] = raw_html
+
+            # Также можно сохранить очищенный текст в отдельное поле, если нужно
+            # result["solution_text"] = clean_text(raw_html)
+            break
+
+    # 7. Ответ - сохраняем СЫРОЙ HTML
+    for h3 in soup.find_all("h3"):
+        if "ответ" in h3.get_text(strip=True).lower():
+            next_element = h3.next_sibling
+
+            # Собираем сырой HTML до следующего h3
+            raw_html = get_raw_html_until_next_h3(next_element)
+
+            # Сохраняем сырой HTML в поле answer
+            result["answer"] = raw_html
+
+            # Также можно сохранить очищенный текст в отдельное поле, если нужно
+            # result["answer_text"] = clean_text(raw_html)
+            break
+
+    # Очищаем только текстовые поля (не HTML)
+    for field in ["subtopic", "complexity_level"]:
+        if field in result and result[field]:
+            result[field] = clean_text(result[field])
+
+    return result
+
+
 def parse_problem(html_content, main_topic):
     """
     Парсинг задачи с сайта problems.ru
@@ -143,7 +290,7 @@ def parse_problem_from_url(url):
     """Полный процесс: загрузка, парсинг, сохранение"""
     html_content = fetch_html(url)
     if html_content:
-        parsed_data = parse_problem(html_content)
+        parsed_data = parse_raw_problem(html_content)
         save_to_json(parsed_data)
         return parsed_data
     return None
@@ -155,7 +302,7 @@ def parse_problem_from_file(filename="test.html", main_topic="algebra", encoding
         with open(filename, "r", encoding=encoding) as f:
             html_content = f.read()
 
-        parsed_data = parse_problem(html_content, main_topic=main_topic)
+        parsed_data = parse_raw_problem(html_content, main_topic=main_topic)
 
         # Сохраняем результат
         save_to_json(parsed_data, "output_from_file.json")
