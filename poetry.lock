@@ -3155,6 +3155,24 @@ langchain-core = ">=0.2.38"
 ormsgpack = ">=1.12.0"
 
 [[package]]
+name = "langgraph-cli"
+version = "0.4.11"
+description = "CLI for interacting with LangGraph API"
+optional = false
+python-versions = ">=3.10"
+files = [
+    {file = "langgraph_cli-0.4.11-py3-none-any.whl", hash = "sha256:807cd6e8c5d4fd7160bd44be67f3b5621cb34ec309658072f75852b639b41ca0"},
+    {file = "langgraph_cli-0.4.11.tar.gz", hash = "sha256:c38c531510ace1c2d90f8a15f4bb5b874ca9d07c0564cbda7590730da2b0dff3"},
+]
+
+[package.dependencies]
+click = ">=8.1.7"
+langgraph-sdk = {version = ">=0.1.0", markers = "python_version >= \"3.11\""}
+
+[package.extras]
+inmem = ["langgraph-api (>=0.5.35,<0.7.0)", "langgraph-runtime-inmem (>=0.7)", "python-dotenv (>=0.8.0)"]
+
+[[package]]
 name = "langgraph-prebuilt"
 version = "1.0.5"
 description = "Library with high-level APIs for creating and executing LangGraph agents and tools."
@@ -7858,4 +7876,4 @@ cffi = ["cffi (>=1.17,<2.0)", "cffi (>=2.0.0b)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.15"
-content-hash = "3913e22193f85e753408c9b98806a86218d86936f62388d0734e65d78c3b6166"
+content-hash = "32fe096c891ca049058e615b3ceea22bc93b1269531b7ac02d0f6205b488ec5c"
