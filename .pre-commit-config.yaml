@@ -1,4 +1,4 @@
-exclude: ^poetry.lock$|(.gitlab-ci-compliance.yml$|.gitlab-ci.yml$)
+exclude: ^poetry\.lock$|\.gitlab-ci-compliance\.yml$|\.gitlab-ci\.yml$|README\.md$
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
@@ -12,7 +12,7 @@ repos:
     hooks:
       - id: check-yaml
       - id: check-json
-      - id: check-added-large-files
+      # - id: check-added-large-files
       - id: end-of-file-fixer
       - id: trailing-whitespace
       - id: check-case-conflict

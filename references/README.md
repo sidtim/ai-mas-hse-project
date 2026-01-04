@@ -11,7 +11,8 @@
 
 - The Rise and Potential of Large Language Model Based Agents: A Survey
   [[arXiv](https://arxiv.org/abs/2309.07864)]
-  <details><summary>Summary</summary>
+    <details><summary>Summary</summary>
+    
   1.  Вся информация в статье до параграфа №4 (стр.24) представляет из себя
       краткий обзор, который включает в себя: эволюцию AI-агентов, концепцию
       AI-агентов `(brain, perception, action)`, виды AI-агентов (для нас
@@ -56,19 +57,17 @@
       - `Quantitative feedback`
       - `Qualitative feedback`
   3.  В параграфе №5 анализируется поведение отдельных AI-агентов как внутри
-      общества AI-агентов, так и персональное поведение вне общества. А также
-      анализируется поведение агентов в разрезе различный сред. Этот параграф
-      про "психологию AI-агентов". Это довольно интересная тема и там есть
-      ссылка на множества статей с различными исследованиями в этой области.
-      Освещаются следующие темы:
-      - Поведение и личностные особенности AI-агентов.
-      - Вводится классификация различных сред, в которых агенты могут
-        осуществлять свое поведение и вступать во взаимодействие
-      - Обсуждение того, как работает сообщество агентов, какие идеи люди могут
-        извлечь из него, и о рисках, о которых могут возникнуть.
-      - `На иллюстрации Figure 11 приводятся примеры различный AI-agents фреймворков`
-
-</details>
+  общества AI-агентов, так и персональное поведение вне общества. А также
+  анализируется поведение агентов в разрезе различный сред. Этот параграф про
+  "психологию AI-агентов". Это довольно интересная тема и там есть ссылка на
+  множества статей с различными исследованиями в этой области. Освещаются
+  следующие темы: - Поведение и личностные особенности AI-агентов. - Вводится
+  классификация различных сред, в которых агенты могут осуществлять свое
+  поведение и вступать во взаимодействие - Обсуждение того, как работает
+  сообщество агентов, какие идеи люди могут извлечь из него, и о рисках, о
+  которых могут возникнуть. -
+  `На иллюстрации Figure 11 приводятся примеры различный AI-agents фреймворков`
+  </details>
 
 - AstroAgents: A Multi-Agent AI for Hypothesis Generation from Mass Spectrometry
   Data [[arXiv](https://arxiv.org/abs/2503.23170) |
@@ -76,6 +75,7 @@
 - Measuring Mathematical Problem Solving With the MATH Dataset
   [[arXiv](https://arxiv.org/abs/2103.03874)]
   <details><summary>Summary</summary>
+
   1.  В параграфах №1 и №2 освещаются следующие темы: \* Говорится про Asymptote
   Language с помощью которого можно решать геометрические задачи.
   </details>
@@ -109,12 +109,98 @@
   [GitHub](https://wizardlm.github.io/WizardMath/)]
 - Evaluation of LLMs for mathematical problem solving
   [[arXiv](https://www.semanticscholar.org/paper/Evaluation-of-LLMs-for-mathematical-problem-solving-Wang-Wang/4fa1e4442dc9c4bf8c5b2109955d28f066fd6991)]
+  <details><summary>Summary</summary>
+
+  1.  В статье оценивают способность LLM решать математические задачи.
+  2.  Для эксперимента используют следющие LLM: GPT-4o; DeepSeek; Gemini.
+  3.  Эксперимент проводится в разрезе трех датасетов с математическими
+      задачами:
+
+          - **GSM8K** - This dataset was released by OpenAI, which contains 8,500 application-based problems at the elementary and middle school levels. The language is colloquial, and the solution paths typically range from multiple steps, making it suitable for testing a model’s ability to process basic mathematical language and logic.
+          - **MATH 500** - This dataset has 500 different difficulty and domain questions selected from the MATH benchmark, covering algebra, sequences, geometry, functions, and other fields. The question stems are close to academic teaching materials, with long chains of reasoning, suitable for analysing multi-step thinking abilities.
+          - **University Graduate Question Bank** - This dataset consists of exam and assignment questions covering probability inference, matrix decomposition, optimisation theory, and financial computation, which are from the MIT Open Courseware. The language is rigorous, and the expression style is academic. Some questions have open structures, conceptual explanations, and non-standard expressions.
+
+      </details>
+
 - MathLearner: A Large Language Model Agent Framework for Learning to Solve
   Mathematical Problems [[arXiv](https://arxiv.org/abs/2408.01779)]
+  <details><summary>Summary</summary>
+
+  1. MathLearner - framework inspired by the principles of human learning,
+     particularly inductive reasoning. Human learning often involves inferring
+     general principles or solutions from specific examples and applying this
+     knowledge to novel situations. Similarly, MathLearner aims to empower LLMs
+     to learn to resolve math problems by leveraging inductive reasoning
+     principles.
+  2. MathLearner operates in three main stages, mirroring the stages of human
+     learning:
+     - **Learning from Examples:** The framework begins by exposing the LLM to a
+       diverse set of math problems and their solutions, allowing it to learn
+       from annotated examples.
+     - **Memorizing Solving Methods:** MathLearner then focuses on memorizing
+       various problem-solving methods and techniques, enabling the LLM to build
+       a repository of strategies for tackling different types of math problems.
+       approach problem-solving in a more systematic and structured manner.
+     - **Recalling Previous Knowledge:** Finally, MathLearner equips the LLM
+       with the ability to recall and apply its learned knowledge to solve new
+       math problems, mimicking the process of retrieving and applying
+       previously learned solutions.
+  3. **MATH Hendrycks** - dataset that used for train and test.
+  4. This paper presents several key contributions:
+     - We propose a new retrieval method based on features to retrieve solutions
+       to similar problems for the encountered problem.
+     - We design a learning framework which can effectively reuse previously
+       learned knowledge to solve current problems.
+  5. Parsel [[GitHub](https://github.com/ezelikman/parsel)] - natural language
+  framework for writing programs for any target language using code language
+  models. Parsel considers multiple implementations for each function, searching
+  sets of implementations to find programs passing unit tests (more generally,
+  program constraints). It can be used for many kinds of algorithmic tasks, e.g.
+  code synthesis, robotic planning, and theorem proving.
+  </details>
+
 - Mathematical Language Models: A Survey
   [[arXiv](https://arxiv.org/abs/2312.07622)] - _здесь приводится ошбирный обзор
   всего того, что связано с решением математических задач с помощью LLM.
   ОБЯЗАТЕЛЬНО К ПРОЧТЕНИЮ!_
+  <details><summary>Summary</summary>
+
+  1. В этом обзоре сравнивается множество LM для решения математических задач на
+     **_60 математических датасетах_**!
+  2. PLMs such as BERT, RoBERTa, BART, GPT-1 and GPT-2 undergo pretraining on
+     extensive textual corpora to assimilate worldly knowledge. To enhance
+     mathematical performance, certain endeavors focus on either pre-training or
+     fine-tuning PLMs using mathematical datasets.
+  3. Moreover, openly accessible LLMs are specifically designed for mathematical
+     tasks, such as LLEMMA, Qwen-Math and InternLM-Math. Recently, o1 and o3
+     obtained state-of-the-art performance on mathematical reasoning by
+     integrating reinforcement learning with the Monte Carlo tree.
+  4. DL4MATH (Deep Learning for Mathematical Reasoning)
+     [[GitHub](https://github.com/lupantech/dl4math)]
+  5. Awesome LLM4Math
+     [[GitHub](https://github.com/tongyx361/Awesome-LLM4Math?tab=readme-ov-file)] -
+     репозиторий с большим числом датасетов с данными по математическим задачам.
+  6. MLM (Mathematical Language Models).
+  7. На рисунке №1 представлены различные MLM для разных типов математических
+     задач, от арифметического счета до доказательства теорем.
+  8. На странице 3 авторы пишут, что существующие инструменты для решения
+     математических задач они подразделяют на:
+     - PLM-based (Pretrained Language Model) approaches: autoregression,
+       non-autoregression.
+     - LMs and LLMs-based methodologies: instruction learning; tool-based
+       strategies; fundamental CoT techniques; advanced CoT methodologies;
+       multi-modal methods.
+     - MLM models
+  9. На странице 3 авторы пишут, что подразделяют математические задачи на
+     следующие виды:
+     - mathematical calculations, consisting of arithmetic representation and
+       arithmetic calculation;
+     - mathematical reasoning, consisting of math problem-solving and theorem
+       proving.
+  10. На рисунке 3 показаны различные LLM и PLM для решения математических
+  задач.
+  </details>
+
 - LLM Agents Making Agent Tools [[arXiv](https://arxiv.org/abs/2502.11705)]
 - Math-Shepherd: Verify and Reinforce LLMs Step-by-step without Human
   Annotations [[arXiv](https://arxiv.org/abs/2312.08935)]
@@ -129,6 +215,19 @@
   [GitHub](https://github.com/WooooDyy/LLM-Agent-Paper-List?tab=readme-ov-file)]
 - Multi-Agent Collaboration: Harnessing the Power of Intelligent LLM Agents
   [[arXiv](https://arxiv.org/abs/2306.03314)]
+- Обзор Llemma: новая математическая open-source модель
+  [[Хабр](https://habr.com/ru/companies/mts_ai/articles/771476/)]
+  <details><summary>Summary</summary>
+  1. Также оценка проводилась с помощью `majority voting или maj@k`. Это способ
+     выбора самого популярного ответа среди k сгенерированных ответов, вместо
+     greedy decoding, который просто выбирает самый вероятный. На рисунке ниже
+     показан пример.
+  2. Дополнительно я провела свою оценку на 21 задаче из ЕГЭ по профильной
+  математике, сравнивая модель с ChatGPT и GPT-4. В результате Llemma показала
+  худшие результаты. В защиту хотелось бы сказать, что тестирование проводилось
+  на маленькой модели. Также цель авторов статьи заключалась в создании открытой
+  базовой модели, которую лучше дообучить на определенной сфере математики.
+  </details>
 
 # CodeEx
 
