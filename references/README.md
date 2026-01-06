@@ -227,6 +227,8 @@
   худшие результаты. В защиту хотелось бы сказать, что тестирование проводилось
   на маленькой модели. Также цель авторов статьи заключалась в создании открытой
   базовой модели, которую лучше дообучить на определенной сфере математики.
+- Literature Review Of Multi-Agent Debate For Problem-Solving [[arXiv](https://arxiv.org/abs/2506.00066)]
+- LLM-Based Multi-Agent Systems for Mathematical Problem Solving: A Comprehensive Literature Review [[WEB](https://www.preprints.org/manuscript/202512.1105)]
   </details>
 
 # CodeEx
