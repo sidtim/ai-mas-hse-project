@@ -98,33 +98,40 @@ if st.session_state.generated:
                 except Exception as e:
                     st.error(f"Ошибка проверки: {e}")
 
-# Показываем результат
+# Показываем результат (строки 100-120 примерно)
 if st.session_state.get("result_shown", False):
     st.markdown("---")
     st.subheader("📊 Результат проверки")
     
     result = st.session_state.result
-    analysis = result["agent_analysis"]
     
-    # Карточка результата
-    if analysis["is_correct"]:
-        st.success("✅ **ПРАВИЛЬНО!**")
+    # Проверяем структуру ответа
+    if "agent_analysis" in result:
+        analysis = result["agent_analysis"]
+        
+        # Карточка результата
+        if analysis.get("is_correct", False):
+            st.success("✅ **ПРАВИЛЬНО!**")
+        else:
+            st.error("❌ **ОШИБКА**")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**Ваш ответ:**")
+            st.write(result.get("user_solution", "—"))
+        
+        with col2:
+            st.markdown("**Правильный ответ:**")
+            st.write(st.session_state.get("ground_truth", "—"))
+        
+        with st.expander("🤖 Что думает агент-решатель"):
+            st.write(f"Агент решил так: {analysis.get('solver_answer', '—')}")
+            st.write(f"Вердикт проверяющего: {analysis.get('reviewer_verdict', '—')}")
     else:
-        st.error("❌ **ОШИБКА**")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("**Ваш ответ:**")
-        st.write(result["user_solution"])
-    
-    with col2:
-        st.markdown("**Правильный ответ:**")
-        st.write(st.session_state.ground_truth)
-    
-    with st.expander("🤖 Что думает агент-решатель"):
-        st.write(f"Агент решил так: {analysis['solver_answer']}")
-        st.write(f"Вердикт проверяющего: {analysis['reviewer_verdict']}")
+        # Если структура другая — показываем как есть
+        st.write("Ответ сервера:")
+        st.json(result)
 
 # Кнопка сброса
 if st.session_state.generated:
