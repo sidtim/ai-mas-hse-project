@@ -1092,6 +1092,49 @@ marshmallow = ">=3.18.0,<4.0.0"
 typing-inspect = ">=0.4.0,<1"
 
 [[package]]
+name = "datasets"
+version = "4.5.0"
+description = "HuggingFace community-driven open-source library of datasets"
+optional = false
+python-versions = ">=3.9.0"
+files = [
+    {file = "datasets-4.5.0-py3-none-any.whl", hash = "sha256:b5d7e08096ffa407dd69e58b1c0271c9b2506140839b8d99af07375ad31b6726"},
+    {file = "datasets-4.5.0.tar.gz", hash = "sha256:00c698ce1c2452e646cc5fad47fef39d3fe78dd650a8a6eb205bb45eb63cd500"},
+]
+
+[package.dependencies]
+dill = ">=0.3.0,<0.4.1"
+filelock = "*"
+fsspec = {version = ">=2023.1.0,<=2025.10.0", extras = ["http"]}
+httpx = "<1.0.0"
+huggingface-hub = ">=0.25.0,<2.0"
+multiprocess = "<0.70.19"
+numpy = ">=1.17"
+packaging = "*"
+pandas = "*"
+pyarrow = ">=21.0.0"
+pyyaml = ">=5.1"
+requests = ">=2.32.2"
+tqdm = ">=4.66.3"
+xxhash = "*"
+
+[package.extras]
+audio = ["torch (>=2.8.0)", "torchcodec (>=0.6.0)"]
+benchmarks = ["tensorflow (==2.12.0)", "torch (==2.0.1)", "transformers (==4.30.1)"]
+dev = ["Pillow (>=9.4.0)", "absl-py", "aiohttp", "decorator", "elasticsearch (>=7.17.12,<8.0.0)", "faiss-cpu (>=1.8.0.post1)", "h5py", "jax (>=0.3.14)", "jaxlib (>=0.3.14)", "joblib (<1.3.0)", "joblibspark", "lz4", "moto[server]", "nibabel (>=5.3.1)", "numba (>=0.56.4)", "polars[timezone] (>=0.20.0)", "protobuf (<4.0.0)", "py7zr", "pylance", "pyspark (>=3.4)", "pytest", "pytest-datadir", "pytest-xdist", "rarfile (>=4.0)", "ruff (>=0.3.0)", "sqlalchemy", "tensorflow (>=2.16.0)", "tensorflow (>=2.6.0)", "tensorflow (>=2.6.0)", "tiktoken", "torch", "torch (>=2.8.0)", "torchcodec (>=0.7.0)", "torchdata", "transformers", "transformers (>=4.42.0)", "zstandard"]
+docs = ["tensorflow (>=2.6.0)", "torch", "transformers"]
+jax = ["jax (>=0.3.14)", "jaxlib (>=0.3.14)"]
+nibabel = ["ipyniivue (==2.4.2)", "nibabel (>=5.3.2)"]
+pdfs = ["pdfplumber (>=0.11.4)"]
+quality = ["ruff (>=0.3.0)"]
+tensorflow = ["tensorflow (>=2.6.0)"]
+tensorflow-gpu = ["tensorflow (>=2.6.0)"]
+tests = ["Pillow (>=9.4.0)", "absl-py", "aiohttp", "decorator", "elasticsearch (>=7.17.12,<8.0.0)", "faiss-cpu (>=1.8.0.post1)", "h5py", "jax (>=0.3.14)", "jaxlib (>=0.3.14)", "joblib (<1.3.0)", "joblibspark", "lz4", "moto[server]", "nibabel (>=5.3.1)", "numba (>=0.56.4)", "polars[timezone] (>=0.20.0)", "protobuf (<4.0.0)", "py7zr", "pylance", "pyspark (>=3.4)", "pytest", "pytest-datadir", "pytest-xdist", "rarfile (>=4.0)", "sqlalchemy", "tensorflow (>=2.16.0)", "tensorflow (>=2.6.0)", "tiktoken", "torch (>=2.8.0)", "torchcodec (>=0.7.0)", "torchdata", "transformers (>=4.42.0)", "zstandard"]
+tests-numpy2 = ["Pillow (>=9.4.0)", "absl-py", "aiohttp", "decorator", "elasticsearch (>=7.17.12,<8.0.0)", "h5py", "jax (>=0.3.14)", "jaxlib (>=0.3.14)", "joblib (<1.3.0)", "joblibspark", "lz4", "moto[server]", "nibabel (>=5.3.1)", "numba (>=0.56.4)", "polars[timezone] (>=0.20.0)", "protobuf (<4.0.0)", "py7zr", "pylance", "pyspark (>=3.4)", "pytest", "pytest-datadir", "pytest-xdist", "rarfile (>=4.0)", "sqlalchemy", "tiktoken", "torch (>=2.8.0)", "torchcodec (>=0.7.0)", "torchdata", "transformers (>=4.42.0)", "zstandard"]
+torch = ["torch"]
+vision = ["Pillow (>=9.4.0)"]
+
+[[package]]
 name = "debugpy"
 version = "1.8.19"
 description = "An implementation of the Debug Adapter Protocol for Python"
@@ -1157,6 +1200,21 @@ all = ["Sphinx (>=3)", "check-manifest (>=0.42)", "mock (>=1.3.0)", "numpy (>=1.
 docs = ["Sphinx (>=3)", "sphinx-rtd-theme (>=0.2)"]
 numpy = ["numpy (>=1.13.0)", "numpy (>=1.15.0)", "numpy (>=1.18.0)", "numpy (>=1.20.0)"]
 tests = ["check-manifest (>=0.42)", "mock (>=1.3.0)", "pytest (==5.4.3)", "pytest (>=6)", "pytest-cov (>=2.10.1)", "pytest-isort (>=1.2.0)", "pytest-pycodestyle (>=2)", "pytest-pycodestyle (>=2.2.0)", "pytest-pydocstyle (>=2)", "pytest-pydocstyle (>=2.2.0)", "sphinx (>=3)", "tox (>=3.7.0)"]
+
+[[package]]
+name = "dill"
+version = "0.4.0"
+description = "serialize all of Python"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "dill-0.4.0-py3-none-any.whl", hash = "sha256:44f54bf6412c2c8464c14e8243eb163690a9800dbe2c367330883b19c7561049"},
+    {file = "dill-0.4.0.tar.gz", hash = "sha256:0633f1d2df477324f53a895b02c901fb961bdbf65a17122586ea7019292cbcf0"},
+]
+
+[package.extras]
+graph = ["objgraph (>=1.7.2)"]
+profile = ["gprof2dot (>=2022.7.29)"]
 
 [[package]]
 name = "diskcache"
@@ -1831,13 +1889,13 @@ files = [
 
 [[package]]
 name = "fsspec"
-version = "2025.12.0"
+version = "2025.10.0"
 description = "File-system specification"
 optional = false
-python-versions = ">=3.10"
+python-versions = ">=3.9"
 files = [
-    {file = "fsspec-2025.12.0-py3-none-any.whl", hash = "sha256:8bf1fe301b7d8acfa6e8571e3b1c3d158f909666642431cc78a1b7b4dbc5ec5b"},
-    {file = "fsspec-2025.12.0.tar.gz", hash = "sha256:c505de011584597b1060ff778bb664c1bc022e87921b0e4f10cc9c44f9635973"},
+    {file = "fsspec-2025.10.0-py3-none-any.whl", hash = "sha256:7c7712353ae7d875407f97715f0e1ffcc21e33d5b24556cb1e090ae9409ec61d"},
+    {file = "fsspec-2025.10.0.tar.gz", hash = "sha256:b6789427626f068f9a83ca4e8a3cc050850b6c0f71f99ddb4f542b8266a26a59"},
 ]
 
 [package.dependencies]
@@ -2520,6 +2578,25 @@ files = [
     {file = "itsdangerous-2.2.0-py3-none-any.whl", hash = "sha256:c6242fc49e35958c8b15141343aa660db5fc54d4f13a1db01a3f5891b98700ef"},
     {file = "itsdangerous-2.2.0.tar.gz", hash = "sha256:e0050c0b7da1eea53ffaf149c0cfbb5c6e2e2b69c4bef22c81fa6eb73e5f6173"},
 ]
+
+[[package]]
+name = "jaraco-context"
+version = "6.1.0"
+description = "Useful decorators and context managers"
+optional = false
+python-versions = ">=3.9"
+files = [
+    {file = "jaraco_context-6.1.0-py3-none-any.whl", hash = "sha256:a43b5ed85815223d0d3cfdb6d7ca0d2bc8946f28f30b6f3216bda070f68badda"},
+    {file = "jaraco_context-6.1.0.tar.gz", hash = "sha256:129a341b0a85a7db7879e22acd66902fda67882db771754574338898b2d5d86f"},
+]
+
+[package.extras]
+check = ["pytest-checkdocs (>=2.4)", "pytest-ruff (>=0.2.1)"]
+cover = ["pytest-cov"]
+doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
+enabler = ["pytest-enabler (>=3.4)"]
+test = ["jaraco.test (>=5.6.0)", "portend", "pytest (>=6,!=8.1.*)"]
+type = ["mypy (<1.19)", "pytest-mypy (>=1.0.1)"]
 
 [[package]]
 name = "jedi"
@@ -3693,6 +3770,17 @@ protobuf = ">=3.12.0,<7"
 pydantic = ">=2.0.0,<3"
 
 [[package]]
+name = "more-itertools"
+version = "10.8.0"
+description = "More routines for operating on iterables, beyond itertools"
+optional = false
+python-versions = ">=3.9"
+files = [
+    {file = "more_itertools-10.8.0-py3-none-any.whl", hash = "sha256:52d4362373dcf7c52546bc4af9a86ee7c4579df9a8dc268be0a2f949d376cc9b"},
+    {file = "more_itertools-10.8.0.tar.gz", hash = "sha256:f638ddf8a1a0d134181275fb5d58b086ead7c6a72429ad725c67503f13ba30bd"},
+]
+
+[[package]]
 name = "mpmath"
 version = "1.3.0"
 description = "Python library for arbitrary-precision floating-point arithmetic"
@@ -3863,6 +3951,37 @@ files = [
     {file = "multidict-6.7.0-py3-none-any.whl", hash = "sha256:394fc5c42a333c9ffc3e421a4c85e08580d990e08b99f6bf35b4132114c5dcb3"},
     {file = "multidict-6.7.0.tar.gz", hash = "sha256:c6e99d9a65ca282e578dfea819cfa9c0a62b2499d8677392e09feaf305e9e6f5"},
 ]
+
+[[package]]
+name = "multiprocess"
+version = "0.70.18"
+description = "better multiprocessing and multithreading in Python"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "multiprocess-0.70.18-pp310-pypy310_pp73-macosx_10_15_x86_64.whl", hash = "sha256:25d4012dcaaf66b9e8e955f58482b42910c2ee526d532844d8bcf661bbc604df"},
+    {file = "multiprocess-0.70.18-pp310-pypy310_pp73-macosx_11_0_arm64.whl", hash = "sha256:06b19433de0d02afe5869aec8931dd5c01d99074664f806c73896b0d9e527213"},
+    {file = "multiprocess-0.70.18-pp310-pypy310_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:6fa1366f994373aaf2d4738b0f56e707caeaa05486e97a7f71ee0853823180c2"},
+    {file = "multiprocess-0.70.18-pp311-pypy311_pp73-macosx_10_15_x86_64.whl", hash = "sha256:8b8940ae30139e04b076da6c5b83e9398585ebdf0f2ad3250673fef5b2ff06d6"},
+    {file = "multiprocess-0.70.18-pp311-pypy311_pp73-macosx_11_0_arm64.whl", hash = "sha256:0929ba95831adb938edbd5fb801ac45e705ecad9d100b3e653946b7716cb6bd3"},
+    {file = "multiprocess-0.70.18-pp311-pypy311_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:4d77f8e4bfe6c6e2e661925bbf9aed4d5ade9a1c6502d5dfc10129b9d1141797"},
+    {file = "multiprocess-0.70.18-pp38-pypy38_pp73-macosx_10_9_arm64.whl", hash = "sha256:2dbaae9bffa1fb2d58077c0044ffe87a8c8974e90fcf778cdf90e139c970d42a"},
+    {file = "multiprocess-0.70.18-pp38-pypy38_pp73-macosx_10_9_x86_64.whl", hash = "sha256:bcac5a4e81f1554d98d1bba963eeb1bd24966432f04fcbd29b6e1a16251ad712"},
+    {file = "multiprocess-0.70.18-pp38-pypy38_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:c0c7cd75d0987ab6166d64e654787c781dbacbcbcaaede4c1ffe664720b3e14b"},
+    {file = "multiprocess-0.70.18-pp39-pypy39_pp73-macosx_10_13_arm64.whl", hash = "sha256:9fd8d662f7524a95a1be7cbea271f0b33089fe792baabec17d93103d368907da"},
+    {file = "multiprocess-0.70.18-pp39-pypy39_pp73-macosx_10_13_x86_64.whl", hash = "sha256:3fbba48bfcd932747c33f0b152b26207c4e0840c35cab359afaff7a8672b1031"},
+    {file = "multiprocess-0.70.18-pp39-pypy39_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:5f9be0342e597dde86152c10442c5fb6c07994b1c29de441b7a3a08b0e6be2a0"},
+    {file = "multiprocess-0.70.18-py310-none-any.whl", hash = "sha256:60c194974c31784019c1f459d984e8f33ee48f10fcf42c309ba97b30d9bd53ea"},
+    {file = "multiprocess-0.70.18-py311-none-any.whl", hash = "sha256:5aa6eef98e691281b3ad923be2832bf1c55dd2c859acd73e5ec53a66aae06a1d"},
+    {file = "multiprocess-0.70.18-py312-none-any.whl", hash = "sha256:9b78f8e5024b573730bfb654783a13800c2c0f2dfc0c25e70b40d184d64adaa2"},
+    {file = "multiprocess-0.70.18-py313-none-any.whl", hash = "sha256:871743755f43ef57d7910a38433cfe41319e72be1bbd90b79c7a5ac523eb9334"},
+    {file = "multiprocess-0.70.18-py38-none-any.whl", hash = "sha256:dbf705e52a154fe5e90fb17b38f02556169557c2dd8bb084f2e06c2784d8279b"},
+    {file = "multiprocess-0.70.18-py39-none-any.whl", hash = "sha256:e78ca805a72b1b810c690b6b4cc32579eba34f403094bbbae962b7b5bf9dfcb8"},
+    {file = "multiprocess-0.70.18.tar.gz", hash = "sha256:f9597128e6b3e67b23956da07cf3d2e5cba79e2f4e0fba8d7903636663ec6d0d"},
+]
+
+[package.dependencies]
+dill = ">=0.4.0"
 
 [[package]]
 name = "mypy-extensions"
@@ -6022,19 +6141,23 @@ oldlibyaml = ["ruamel.yaml.clib"]
 
 [[package]]
 name = "s3fs"
-version = "2025.12.0"
+version = "2025.10.0"
 description = "Convenient Filesystem interface over S3"
 optional = false
-python-versions = ">=3.10"
+python-versions = ">=3.9"
 files = [
-    {file = "s3fs-2025.12.0-py3-none-any.whl", hash = "sha256:89d51e0744256baad7ae5410304a368ca195affd93a07795bc8ba9c00c9effbb"},
-    {file = "s3fs-2025.12.0.tar.gz", hash = "sha256:8612885105ce14d609c5b807553f9f9956b45541576a17ff337d9435ed3eb01f"},
+    {file = "s3fs-2025.10.0-py3-none-any.whl", hash = "sha256:da7ef25efc1541f5fca8e1116361e49ea1081f83f4e8001fbd77347c625da28a"},
+    {file = "s3fs-2025.10.0.tar.gz", hash = "sha256:e8be6cddc77aceea1681ece0f472c3a7f8ef71a0d2acddb1cc92bb6afa3e9e4f"},
 ]
 
 [package.dependencies]
 aiobotocore = ">=2.5.4,<3.0.0"
 aiohttp = "<4.0.0a0 || >4.0.0a0,<4.0.0a1 || >4.0.0a1"
-fsspec = "2025.12.0"
+fsspec = "2025.10.0"
+
+[package.extras]
+awscli = ["aiobotocore[awscli] (>=2.5.4,<3.0.0)"]
+boto3 = ["aiobotocore[boto3] (>=2.5.4,<3.0.0)"]
 
 [[package]]
 name = "s3transfer"
@@ -7344,6 +7467,28 @@ files = [
 dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 
 [[package]]
+name = "wolframalpha"
+version = "5.1.3"
+description = "Wolfram|Alpha 2.0 API client"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "wolframalpha-5.1.3-py3-none-any.whl", hash = "sha256:549b44e64595c5845be4c94f2b306a84832157bef422b20937cbca44b48ee117"},
+    {file = "wolframalpha-5.1.3.tar.gz", hash = "sha256:56226efeca0f55acec5e17dd2f6537a178d0bf4feec4df0615165e2968bb49b8"},
+]
+
+[package.dependencies]
+httpx = "*"
+"jaraco.context" = "*"
+more-itertools = "*"
+multidict = "*"
+xmltodict = "*"
+
+[package.extras]
+doc = ["furo", "jaraco.packaging (>=9.3)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
+test = ["keyring", "pmxbot", "pytest (>=6,!=8.1.*)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy", "pytest-ruff (>=0.2.1)"]
+
+[[package]]
 name = "wrapt"
 version = "1.17.3"
 description = "Module for decorators, wrappers and monkey patching."
@@ -7432,6 +7577,20 @@ files = [
     {file = "wrapt-1.17.3-py3-none-any.whl", hash = "sha256:7171ae35d2c33d326ac19dd8facb1e82e5fd04ef8c6c0e394d7af55a55051c22"},
     {file = "wrapt-1.17.3.tar.gz", hash = "sha256:f66eb08feaa410fe4eebd17f2a2c8e2e46d3476e9f8c783daa8e09e0faa666d0"},
 ]
+
+[[package]]
+name = "xmltodict"
+version = "1.0.3"
+description = "Makes working with XML feel like you are working with JSON"
+optional = false
+python-versions = ">=3.9"
+files = [
+    {file = "xmltodict-1.0.3-py3-none-any.whl", hash = "sha256:35d65d5c08f2a1121df338a0c4e49ca638480fa7c1b899ded45e0759bf32e40e"},
+    {file = "xmltodict-1.0.3.tar.gz", hash = "sha256:3bf1f49c7836df34cf6d9cc7e690c4351f7dfff2ab0b8a1988bba4a9b9474909"},
+]
+
+[package.extras]
+test = ["pytest", "pytest-cov"]
 
 [[package]]
 name = "xxhash"
@@ -7876,4 +8035,4 @@ cffi = ["cffi (>=1.17,<2.0)", "cffi (>=2.0.0b)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.15"
-content-hash = "32fe096c891ca049058e615b3ceea22bc93b1269531b7ac02d0f6205b488ec5c"
+content-hash = "1831c9752dbc07ae3a5c5acd8bc29cdef95dba35498cbfd3f3013db1fa04debd"
