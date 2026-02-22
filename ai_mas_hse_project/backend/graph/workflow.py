@@ -71,6 +71,10 @@ class MathWorkflow:
         """Только генерация задачи (для первого эндпоинта)"""
         return self.generator.generate(topic)
     
+    def generate_only_static(self, topic: str) -> dict:
+        """Только генерация задачи (для первого эндпоинта)"""
+        return self.generator.generate_static_task(topic)
+    
     def full_pipeline(self, topic: str, problem: str, user_solution: str, ground_truth: str) -> dict:
         """Полный pipeline: решение + проверка"""
         initial_state = {

@@ -11,6 +11,7 @@ services:
     volumes:
       - ./backend:/app
       - model-cache:/root/.cache/huggingface
+      - ./static_dataset:/app/static_dataset
     environment:
       - PYTHONUNBUFFERED=1
 

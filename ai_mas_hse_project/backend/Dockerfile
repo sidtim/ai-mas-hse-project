@@ -16,6 +16,9 @@ RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir numpy==1.24.3
 RUN pip install --no-cache-dir torch==2.0.1 --index-url https://download.pytorch.org/whl/cpu
 
+# Устанавливаем pandas
+RUN pip install --no-cache-dir pandas
+
 # Устанавливаем langchain-зависимости (совместимые версии)
 RUN pip install --no-cache-dir \
     langchain-core==0.1.52 \

@@ -22,6 +22,8 @@ if "ground_truth" not in st.session_state:
     st.session_state.ground_truth = ""
 if "topic" not in st.session_state:
     st.session_state.topic = "алгебра"
+if "difficulty" not in st.session_state:  # ← Добавь это
+    st.session_state.difficulty = "средний"
 
 # Шаг 1: Выбор темы и генерация
 st.subheader("Шаг 1: Выберите тему и сгенерируйте задачу")
@@ -36,16 +38,43 @@ with col1:
     )
     st.session_state.topic = topic
 
+    # Добавляем выбор уровня сложности
+    difficulty = st.selectbox(
+        "Уровень сложности:",
+        ["легкий", "средний", "сложный"],
+        index=["легкий", "средний", "сложный"].index(st.session_state.difficulty)
+    )
+    st.session_state.difficulty = difficulty
+
 with col2:
     st.write("")
     st.write("")
-    generate_btn = st.button("🎲 Сгенерировать задачу", use_container_width=True)
+    generate_btn_agent = st.button("🎲 Сгенерировать задачу агентом", use_container_width=True)
+    generate_btn_static = st.button("🎲 Сгенерировать задачу из банка задач", use_container_width=True)
 
-if generate_btn:
+if generate_btn_agent:
     with st.spinner("Генерирую задачу..."):
         try:
             response = requests.post(
                 f"{BACKEND_URL}/generate",
+                json={"topic": topic}
+            )
+            response.raise_for_status()
+            data = response.json()
+            
+            st.session_state.problem = data["problem"]
+            st.session_state.ground_truth = data["ground_truth"]
+            st.session_state.generated = True
+            st.session_state.result_shown = False
+            
+        except Exception as e:
+            st.error(f"Ошибка генерации: {e}")
+
+if generate_btn_static:
+    with st.spinner("Генерирую задачу..."):
+        try:
+            response = requests.post(
+                f"{BACKEND_URL}/generate_static",
                 json={"topic": topic}
             )
             response.raise_for_status()

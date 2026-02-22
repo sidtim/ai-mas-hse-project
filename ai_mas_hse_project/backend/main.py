@@ -31,11 +31,28 @@ def root():
 
 @app.post("/generate", response_model=GenerateResponse)
 def generate_task(request: GenerateRequest):
-    logger.info(f"=== НАЧАЛО ГЕНЕРАЦИИ: {request.topic} ===")
+    logger.info(f"=== НАЧАЛО ГЕНЕРАЦИИ АГЕНТОМ: {request.topic} ===")
     try:
         from graph.workflow import MathWorkflow
         wf = MathWorkflow()
         result = wf.generate_only(request.topic)
+        logger.info(f"УСПЕХ: {result.get('problem', 'НЕТ')[:50]}...")
+        
+        return GenerateResponse(
+            problem=result["problem"],
+            ground_truth=result["ground_truth"]
+        )
+    except Exception as e:
+        logger.error(f"ОШИБКА: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/generate_static", response_model=GenerateResponse)
+def generate_task_static(request: GenerateRequest):
+    logger.info(f"=== НАЧАЛО ГЕНЕРАЦИИ ИЗ БАНКА ЗАДАЧ: {request.topic} ===")
+    try:
+        from graph.workflow import MathWorkflow
+        wf = MathWorkflow()
+        result = wf.generate_only_static(request.topic)
         logger.info(f"УСПЕХ: {result.get('problem', 'НЕТ')[:50]}...")
         
         return GenerateResponse(

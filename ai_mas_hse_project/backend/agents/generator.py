@@ -1,5 +1,9 @@
 from langchain_core.messages import SystemMessage, HumanMessage
 from config import get_llm
+from pathlib import Path
+import pickle
+import os
+import pandas as pd
 
 # Промпт на русском, без служебных токенов
 SYSTEM_PROMPT = """Ты генератор математических задач. Придумай ОДНУ задачу по указанной теме.
@@ -79,3 +83,24 @@ class GeneratorAgent:
             "problem": problem,
             "ground_truth": answer
         }
+    
+    def generate_static_task(self, topic: str):
+        # Путь внутри контейнера
+        dataset_path = Path("/app/static_dataset/list_dict_with_tasks.pkl")
+        
+        with open(dataset_path, "rb") as f:
+            df = pickle.load(f)
+
+        df = pd.DataFrame(df)
+
+        random_task = df.sample(1)
+
+        text_task = random_task['problem'].iloc[0]
+        answer_task = random_task['answer'].iloc[0]
+
+        return {
+            "problem": text_task,
+            "ground_truth": answer_task
+        }
+
+        
