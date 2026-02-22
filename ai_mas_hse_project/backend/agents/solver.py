@@ -39,7 +39,7 @@ class SolverAgent:
         ]
         
         response = self.llm.invoke(messages)
-        text = response.content.replace("<|system|>", "").replace("<|user|>", "").replace("<|assistant|>", "").strip()
+        text = response.content #.replace("<|system|>", "").replace("<|user|>", "").replace("<|assistant|>", "").strip()
         extracted = extract_answer(text)
         
         return {

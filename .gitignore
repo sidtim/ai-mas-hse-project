@@ -148,7 +148,7 @@ __pycache__/
 *.swo
 
 # Model cache (большие файлы)
-models/
+# models/
 *.bin
 *.safetensors
 

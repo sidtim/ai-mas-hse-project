@@ -69,8 +69,8 @@ class GeneratorAgent:
         response = self.llm.invoke([system_msg, human_msg])
         text = response.content
         
-        # Очистка от служебных токенов
-        text = text.replace("<|system|>", "").replace("<|user|>", "").replace("<|assistant|>", "").strip()
+        # # Очистка от служебных токенов
+        # text = text.replace("<|system|>", "").replace("<|user|>", "").replace("<|assistant|>", "").strip()
         
         problem, answer = extract_problem_answer(text)
         
