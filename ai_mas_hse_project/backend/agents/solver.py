@@ -1,7 +1,9 @@
 from langchain_core.messages import SystemMessage, HumanMessage
 from config import get_llm
 
-SYSTEM_PROMPT = """Ты репетитор по математике. Реши задачу пошагово.
+SYSTEM_PROMPT = """
+Ты репетитор по математике. Реши задачу пошагово.
+Старайся решать задачу кратко и лаконично, если это возможно.
 
 Формат ответа (строго):
 РЕШЕНИЕ: [пошаговое решение]
@@ -42,6 +44,6 @@ class SolverAgent:
         extracted = extract_answer(text)
         
         return {
-            "full_response": text,
-            "answer": extracted
+            "solver_full": text,
+            "solver_answer": extracted
         }
