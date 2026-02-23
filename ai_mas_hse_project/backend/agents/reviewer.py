@@ -9,6 +9,7 @@ SYSTEM_PROMPT = """Ты проверяющий. Сравни ответ учен
 
 Не объясняй, просто скажи ПРАВИЛЬНО или НЕПРАВИЛЬНО."""
 
+
 class ReviewerAgent:
     def __init__(self):
         self.llm = get_llm()
@@ -22,7 +23,7 @@ class ReviewerAgent:
         ]
         
         response = self.llm.invoke(messages)
-        text = response.content.replace("<|system|>", "").replace("<|user|>", "").replace("<|assistant|>", "").strip().upper()
+        text = response.content.strip().upper()
         
         is_correct = "ПРАВИЛЬНО" in text or "CORRECT" in text
         

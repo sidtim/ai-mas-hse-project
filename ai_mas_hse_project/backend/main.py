@@ -2,6 +2,8 @@ import logging
 import traceback
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
 from models.schemas import (
     GenerateRequest, GenerateResponse,
     SolveRequest, SolveResponse, AgentResult
@@ -10,7 +12,7 @@ from models.schemas import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Math Multi-Agent System", version="1.0.0")
+app = FastAPI(title="Math Multi-Agent System", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,14 +25,23 @@ app.add_middleware(
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"ГЛОБАЛЬНАЯ ОШИБКА: {str(exc)}")
     logger.error(traceback.format_exc())
-    return HTTPException(status_code=500, detail=str(exc))
+    # Исправлено: возвращаем JSONResponse, а не HTTPException
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc)}
+    )
 
 @app.get("/")
 def root():
-    return {"status": "ok"}
+    return {
+        "status": "ok",
+        "version": "2.0.0",
+        "llm_provider": "OpenAI-compatible API (vsellm.ru)"
+    }
 
 @app.post("/generate", response_model=GenerateResponse)
 def generate_task(request: GenerateRequest):
+    """Генерация новой задачи агентом (LLM)"""
     logger.info(f"=== НАЧАЛО ГЕНЕРАЦИИ АГЕНТОМ: {request.topic} ===")
     try:
         from graph.workflow import MathWorkflow
@@ -45,9 +56,10 @@ def generate_task(request: GenerateRequest):
     except Exception as e:
         logger.error(f"ОШИБКА: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-    
+
 @app.post("/generate_static", response_model=GenerateResponse)
 def generate_task_static(request: GenerateRequest):
+    """Получение случайной задачи из статического банка"""
     logger.info(f"=== НАЧАЛО ГЕНЕРАЦИИ ИЗ БАНКА ЗАДАЧ: {request.topic} ===")
     try:
         from graph.workflow import MathWorkflow
@@ -65,21 +77,26 @@ def generate_task_static(request: GenerateRequest):
 
 @app.post("/solve", response_model=SolveResponse)
 def solve_task(request: SolveRequest):
-    logger.info(f"=== НАЧАЛО ПРОВЕРКИ ===")
+    """
+    Решение задачи и проверка пользовательского ответа.
+    Использует solve + review (без генерации новой задачи).
+    """
+    logger.info(f"=== НАЧАЛО РЕШЕНИЯ И ПРОВЕРКИ ===")
     try:
         from graph.workflow import MathWorkflow
         wf = MathWorkflow()
         
-        result = wf.full_pipeline(
-            topic="проверка",
+        # Используем solve_and_review вместо full_pipeline
+        # чтобы не генерировать новую задачу, а решить предоставленную
+        result = wf.solve_and_review(
             problem=request.problem,
             user_solution=request.user_solution,
             ground_truth=request.ground_truth or ""
         )
         
-        logger.info(f"Результат проверки: {result}")
+        logger.info(f"Результат решения: solver={result.get('solver_answer', 'N/A')}")
+        logger.info(f"Результат проверки: {result.get('review_verdict', 'НЕИЗВЕСТНО')}")
         
-        # Собираем ответ в правильном формате
         return SolveResponse(
             problem=request.problem,
             user_solution=request.user_solution,
@@ -90,7 +107,63 @@ def solve_task(request: SolveRequest):
             )
         )
     except Exception as e:
-        logger.error(f"ОШИБКА ПРОВЕРКИ: {str(e)}", exc_info=True)
+        logger.error(f"ОШИБКА РЕШЕНИЯ/ПРОВЕРКИ: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/solve_only")
+def solve_only(request: SolveRequest):
+    """
+    [Дополнительный] Только решение задачи без проверки.
+    Возвращает полное решение и ответ.
+    """
+    logger.info(f"=== ТОЛЬКО РЕШЕНИЕ ===")
+    try:
+        from agents.solver import SolverAgent
+        solver = SolverAgent()
+        
+        result = solver.solve(request.problem)
+        
+        return {
+            "problem": request.problem,
+            "solution": result["full_response"],
+            "answer": result["answer"]
+        }
+    except Exception as e:
+        logger.error(f"ОШИБКА РЕШЕНИЯ: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/full_pipeline")
+def full_pipeline_endpoint(request: GenerateRequest):
+    """
+    [Дополнительный] Полный pipeline: генерация -> решение -> проверка.
+    Генерирует задачу, решает её и проверяет (сравнивает solver vs ground_truth).
+    Полезно для тестирования качества модели.
+    """
+    logger.info(f"=== ПОЛНЫЙ PIPELINE: {request.topic} ===")
+    try:
+        from graph.workflow import MathWorkflow
+        wf = MathWorkflow()
+        
+        # Генерируем задачу
+        gen_result = wf.generate_only(request.topic)
+        
+        # Решаем и проверяем (сравниваем solver_answer с ground_truth)
+        result = wf.solve_and_review(
+            problem=gen_result["problem"],
+            user_solution="",  # Нет пользовательского ответа
+            ground_truth=gen_result["ground_truth"]
+        )
+        
+        return {
+            "generated_problem": gen_result["problem"],
+            "ground_truth": gen_result["ground_truth"],
+            "solver_answer": result.get("solver_answer", ""),
+            "solver_full": result.get("solver_full", ""),
+            "review_verdict": result.get("review_verdict", "НЕИЗВЕСТНО"),
+            "is_correct": result.get("is_correct", False)
+        }
+    except Exception as e:
+        logger.error(f"ОШИБКА PIPELINE: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

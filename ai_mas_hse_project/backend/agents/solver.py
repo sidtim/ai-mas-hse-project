@@ -9,11 +9,9 @@ SYSTEM_PROMPT = """Ты репетитор по математике. Реши �
 
 Будь кратким. ОТВЕТ — только число или формула."""
 
+
 def extract_answer(text: str) -> str:
     """Извлекает ответ из решения"""
-    # Убираем служебные токены
-    text = text.replace("<|system|>", "").replace("<|user|>", "").replace("<|assistant|>", "").strip()
-    
     if "ОТВЕТ:" in text:
         parts = text.split("ОТВЕТ:")
         if len(parts) >= 2:
@@ -28,6 +26,7 @@ def extract_answer(text: str) -> str:
     lines = [l.strip() for l in text.split("\n") if l.strip()]
     return lines[-1] if lines else text.strip()
 
+
 class SolverAgent:
     def __init__(self):
         self.llm = get_llm()
@@ -39,7 +38,7 @@ class SolverAgent:
         ]
         
         response = self.llm.invoke(messages)
-        text = response.content #.replace("<|system|>", "").replace("<|user|>", "").replace("<|assistant|>", "").strip()
+        text = response.content
         extracted = extract_answer(text)
         
         return {

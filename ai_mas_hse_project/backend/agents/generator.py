@@ -5,7 +5,7 @@ import pickle
 import os
 import pandas as pd
 
-# Промпт на русском, без служебных токенов
+# Промпт на русском
 SYSTEM_PROMPT = """Ты генератор математических задач. Придумай ОДНУ задачу по указанной теме.
 
 Требования:
@@ -23,11 +23,9 @@ TOPIC_PROMPTS = {
     "вероятность и статистика": "Составь задачу по теории вероятностей или статистике."
 }
 
+
 def extract_problem_answer(text: str) -> tuple:
     """Извлекает задачу и ответ из ответа модели"""
-    # Убираем служебные токены если они есть
-    text = text.replace("<|system|>", "").replace("<|user|>", "").replace("<|assistant|>", "").strip()
-    
     problem = ""
     answer = ""
     
@@ -57,6 +55,7 @@ def extract_problem_answer(text: str) -> tuple:
     
     return problem, answer
 
+
 class GeneratorAgent:
     def __init__(self):
         self.llm = get_llm()
@@ -64,17 +63,13 @@ class GeneratorAgent:
     def generate(self, topic: str) -> dict:
         topic_hint = TOPIC_PROMPTS.get(topic, "Составь математическую задачу.")
         
-        # Формируем сообщения вручную в формате TinyLlama
-        # TinyLlama использует: <|system|>...<|user|>...<|assistant|>...
+        messages = [
+            SystemMessage(content=SYSTEM_PROMPT),
+            HumanMessage(content=f"Тема: {topic}. {topic_hint}")
+        ]
         
-        system_msg = SystemMessage(content=SYSTEM_PROMPT)
-        human_msg = HumanMessage(content=f"Тема: {topic}. {topic_hint}")
-        
-        response = self.llm.invoke([system_msg, human_msg])
+        response = self.llm.invoke(messages)
         text = response.content
-        
-        # # Очистка от служебных токенов
-        # text = text.replace("<|system|>", "").replace("<|user|>", "").replace("<|assistant|>", "").strip()
         
         problem, answer = extract_problem_answer(text)
         
@@ -102,5 +97,3 @@ class GeneratorAgent:
             "problem": text_task,
             "ground_truth": answer_task
         }
-
-        

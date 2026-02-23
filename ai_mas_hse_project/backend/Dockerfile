@@ -23,7 +23,8 @@ RUN pip install --no-cache-dir pandas
 RUN pip install --no-cache-dir \
     langchain-core==0.1.52 \
     langgraph==0.0.48 \
-    langchain-huggingface==0.0.3
+    langchain-huggingface==0.0.3 \
+    langchain-openai>=0.1.0
 
 # Остальные зависимости
 RUN pip install --no-cache-dir \
