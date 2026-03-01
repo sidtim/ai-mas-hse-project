@@ -155,11 +155,11 @@ if st.session_state.get("result_shown", False):
             st.write(st.session_state.get("ground_truth", "—"))
         
         with st.expander("🤖 Что думает агент-решатель"):
-            st.write(f"Агент решил так: {analysis.get('solver_answer', '—')}")
-            st.write(f"Вердикт проверяющего: {analysis.get('reviewer_verdict', '—')}")
-            st.write(f"Анализ ответа от проверющего: {analysis.get('answer_analysis', '—')}")
-            st.write(f"Анализ решения от проверющего: {analysis.get('solution_analysis', '—')}")
-            st.write(f"Рекомендации к решению от проверющего: {analysis.get('recommendation', '—')}")
+            st.markdown(f"**Агент решил так:** {analysis.get('solver_answer', '—')}")
+            st.markdown(f"**Вердикт проверяющего:** {analysis.get('reviewer_verdict', '—')}")
+            st.markdown(f"**Анализ ответа от проверющего:** {analysis.get('answer_analysis', '—')}")
+            st.markdown(f"**Анализ решения от проверющего:** {analysis.get('solution_analysis', '—')}")
+            st.markdown(f"**Рекомендации к решению от проверющего:** {analysis.get('recommendation', '—')}")
     else:
         # Если структура другая — показываем как есть
         st.write("Ответ сервера:")
