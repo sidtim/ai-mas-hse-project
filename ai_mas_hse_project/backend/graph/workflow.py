@@ -53,8 +53,8 @@ class MathWorkflow:
     def _solve_node(self, state: AgentState) -> dict:
         result = self.solver.solve(state["problem"])
         return {
-            "solver_answer": result["answer"],
-            "solver_full": result["full_response"],
+            "solver_answer": result["solver_answer"],
+            "solver_full": result["solver_full"],
             "messages": []
         }
     

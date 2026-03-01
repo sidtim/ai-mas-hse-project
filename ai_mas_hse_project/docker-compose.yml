@@ -8,12 +8,15 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    environment:
+      - TEMPERATURE=${TEMPERATURE:-0.7}
+      - MAX_TOKENS=${MAX_TOKENS:-2000}
+      - MODEL_ID=${MODEL_ID:-deepseek/deepseek-v3.2}
+      - PYTHONUNBUFFERED=1
     volumes:
       - ./backend:/app
       - model-cache:/root/.cache/huggingface
       - ./static_dataset:/app/static_dataset
-    environment:
-      - PYTHONUNBUFFERED=1
 
   frontend:
     build: ./frontend

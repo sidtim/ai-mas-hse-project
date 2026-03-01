@@ -4,6 +4,8 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from config import MODEL_ID, TEMPERATURE, MAX_TOKENS
+
 from models.schemas import (
     GenerateRequest, GenerateResponse,
     SolveRequest, SolveResponse, AgentResult
@@ -165,6 +167,14 @@ def full_pipeline_endpoint(request: GenerateRequest):
     except Exception as e:
         logger.error(f"ОШИБКА PIPELINE: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/config")
+def get_config():
+    return {
+        "model_id": MODEL_ID,
+        "temperature": TEMPERATURE,
+        "max_tokens": MAX_TOKENS
+    }
 
 if __name__ == "__main__":
     import uvicorn
