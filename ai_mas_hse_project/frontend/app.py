@@ -2,45 +2,6 @@ import streamlit as st
 import requests
 import os
 
-import re
-
-def render_math_text(text: str):
-    """
-    Универсальный рендерер текста с LaTeX формулами.
-    Поддерживает: $inline$, $$block$$, \( inline \), \[ block \]
-    """
-    if not text:
-        st.write("—")
-        return
-    
-    # Заменяем \( \) на $ $ и \[ \] на $$ $$
-    text = text.replace('\\(', '$').replace('\\)', '$')
-    text = text.replace('\\[', '$$').replace('\\]', '$$')
-    
-    # Разбиваем на блоки: обычный текст / формулы
-    pattern = r'(\$\$.*?\$\$|\$.*?\$)'
-    parts = re.split(pattern, text)
-    
-    result_md = ""
-    for part in parts:
-        if part.startswith('$$') and part.endswith('$$'):
-            # Block math — оставляем как есть для st.latex
-            latex = part[2:-2]
-            if result_md:
-                st.markdown(result_md)
-                result_md = ""
-            st.latex(latex)
-        elif part.startswith('$') and part.endswith('$'):
-            # Inline math — конвертируем в текстовый вид или оставляем для markdown
-            latex = part[1:-1]
-            # Используем Unicode для простых случаев или оставляем как LaTeX
-            result_md += f"${latex}$"
-        else:
-            result_md += part
-    
-    if result_md:
-        st.markdown(result_md, unsafe_allow_html=False)
-
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
 st.set_page_config(
