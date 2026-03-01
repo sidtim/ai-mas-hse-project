@@ -105,7 +105,10 @@ def solve_task(request: SolveRequest):
             agent_analysis=AgentResult(
                 solver_answer=result.get("solver_answer", ""),
                 reviewer_verdict=result.get("review_verdict", "НЕИЗВЕСТНО"),
-                is_correct=result.get("is_correct", False)
+                is_correct=result.get("is_correct", False),
+                answer_analysis=result.get("answer_analysis", ""),
+                solution_analysis=result.get("solution_analysis", ""),
+                recommendation=result.get("recommendation", ""),
             )
         )
     except Exception as e:

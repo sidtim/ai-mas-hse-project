@@ -6,6 +6,14 @@
 
 Студент: Андрей Тимонин (tg: @sidtim)
 
+Для запуска проекта зайдите в терминал и введите команду: `TEMPERATURE=0.7 MAX_TOKENS=2048 MODEL_ID=deepseek/deepseek-v3.2 docker-compose up --build`
+
+Параметры окружения `TEMPERATURE`, `MAX_TOKENS`, `MODEL_ID` можете задать свои.
+
+Чтобы проверить конфигурацию откройте новый bash-терминал и введите: `curl http://localhost:8000/config`
+
+***Сюда еще 100% надо API-Ключ добавить, чтобы любой рандомный пользователь смог воспользоваться сервисом***
+
 [План проекта](https://docs.google.com/document/d/11XnvAZldgIoLgLMSvpIcb7nGW0Zq7bHskZTJEk0Eeos/edit?usp=sharing)
 
 ```

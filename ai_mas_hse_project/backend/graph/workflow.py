@@ -19,6 +19,9 @@ class AgentState(TypedDict):
     solver_full: str    # Полное решение от SolverAgent
     review_verdict: str
     is_correct: bool
+    answer_analysis: str # Анализ ответа от оценщика
+    solution_analysis: str # Анализ решения от оценщика
+    recommendation: str # # Рекомендации от оценщика
 
 
 class MathWorkflow:
@@ -68,6 +71,9 @@ class MathWorkflow:
         return {
             "review_verdict": result["verdict"],
             "is_correct": result["is_correct"],
+            "answer_analysis": result["answer_analysis"],
+            "solution_analysis": result["solution_analysis"],
+            "recommendation": result["recommendation"],
             "messages": []
         }
     
@@ -117,7 +123,10 @@ class MathWorkflow:
             "solver_answer": "",
             "solver_full": "",
             "review_verdict": "",
-            "is_correct": False
+            "is_correct": False,
+            "answer_analysis": "",
+            "solution_analysis": "",
+            "recommendation": "",
         }
         
         return graph.invoke(initial_state)

@@ -17,6 +17,10 @@ class AgentResult(BaseModel):
     solver_answer: str
     reviewer_verdict: str
     is_correct: bool
+    answer_analysis: Optional[str] = None
+    solution_analysis: Optional[str] = None
+    recommendation: Optional[str] = None
+    
 
 class SolveResponse(BaseModel):
     problem: str
