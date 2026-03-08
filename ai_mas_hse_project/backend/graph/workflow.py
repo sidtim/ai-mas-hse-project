@@ -8,6 +8,8 @@ from agents.generator import GeneratorAgent
 from agents.solver import SolverAgent
 from agents.reviewer import ReviewerAgent
 
+from agents.mcp_solver import MCPSolverAgent, MCPClient
+
 
 class AgentState(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
@@ -130,3 +132,107 @@ class MathWorkflow:
         }
         
         return graph.invoke(initial_state)
+    
+
+# ======================= MCP SOLVER ======================= #
+
+
+class MCPAgentState(TypedDict):
+    messages: Annotated[list[AnyMessage], add_messages]
+    topic: str
+    problem: str
+    ground_truth: str
+    user_solution: str
+    mcp_answer: str
+    mcp_full_response: str
+    mcp_tool_calls: list
+    review_verdict: str
+    is_correct: bool
+    answer_analysis: str
+    solution_analysis: str
+    recommendation: str
+
+
+class MCPMathWorkflow:
+    """Workflow с использованием MCP для решения"""
+    
+    def __init__(self):
+        self.generator = GeneratorAgent()
+        self.mcp_solver = MCPSolverAgent()
+        self.reviewer = ReviewerAgent()
+        
+        # Создаем граф
+        builder = StateGraph(MCPAgentState)
+        
+        builder.add_node("generate", self._generate_node)
+        builder.add_node("mcp_solve", self._mcp_solve_node)
+        builder.add_node("review", self._review_node)
+        
+        builder.set_entry_point("generate")
+        builder.add_edge("generate", "mcp_solve")
+        builder.add_edge("mcp_solve", "review")
+        builder.add_edge("review", END)
+        
+        self.graph = builder.compile()
+    
+    async def _generate_node(self, state: MCPAgentState) -> dict:
+        """Генерация задачи"""
+        result = self.generator.generate(state["topic"])
+        return {
+            "problem": result["problem"],
+            "ground_truth": result["ground_truth"],
+            "messages": []
+        }
+    
+    async def _mcp_solve_node(self, state: MCPAgentState) -> dict:
+        """Решение через MCP"""
+        result = await self.mcp_solver.solve(state["problem"])
+        return {
+            "mcp_answer": result["answer"],
+            "mcp_full_response": result["full_response"],
+            "mcp_tool_calls": result["tool_calls"],
+            "messages": []
+        }
+    
+    async def _review_node(self, state: MCPAgentState) -> dict:
+        """Проверка решения"""
+        # Проверяем ответ пользователя или MCP солвера
+        answer_to_check = state.get("user_solution") or state.get("mcp_answer", "")
+        
+        result = self.reviewer.review(
+            solver_answer=answer_to_check,
+            ground_truth=state["ground_truth"]
+        )
+        
+        return {
+            "review_verdict": result["verdict"],
+            "is_correct": result["is_correct"],
+            "answer_analysis": result["answer_analysis"],
+            "solution_analysis": result["solution_analysis"],
+            "recommendation": result["recommendation"],
+            "messages": []
+        }
+    
+    def generate_only(self, topic: str) -> dict:
+        """Только генерация"""
+        return self.generator.generate(topic)
+    
+    async def solve_with_mcp(self, problem: str, user_solution: str = "", ground_truth: str = "") -> dict:
+        """Решение задачи через MCP и проверка"""
+        initial_state = {
+            "messages": [],
+            "topic": "",
+            "problem": problem,
+            "ground_truth": ground_truth,
+            "user_solution": user_solution,
+            "mcp_answer": "",
+            "mcp_full_response": "",
+            "mcp_tool_calls": [],
+            "review_verdict": "",
+            "is_correct": False,
+            "answer_analysis": "",
+            "solution_analysis": "",
+            "recommendation": "",
+        }
+        
+        return await self.graph.ainvoke(initial_state)

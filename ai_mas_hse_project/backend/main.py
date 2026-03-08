@@ -171,6 +171,38 @@ def full_pipeline_endpoint(request: GenerateRequest):
         logger.error(f"ОШИБКА PIPELINE: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
     
+
+@app.post("/solve_with_mcp")
+async def solve_with_mcp(request: SolveRequest):
+    """
+    Решение задачи с использованием MCP инструментов.
+    Более точные математические вычисления через sympy/numpy.
+    """
+    logger.info(f"=== MCP РЕШЕНИЕ ===")
+    try:
+        from graph.workflow import MCPMathWorkflow
+        wf = MCPMathWorkflow()
+        
+        result = await wf.solve_with_mcp(
+            problem=request.problem,
+            user_solution=request.user_solution,
+            ground_truth=request.ground_truth or ""
+        )
+        
+        return {
+            "problem": request.problem,
+            "mcp_answer": result.get("mcp_answer", ""),
+            "mcp_tool_calls": result.get("mcp_tool_calls", []),
+            "review_verdict": result.get("review_verdict", ""),
+            "is_correct": result.get("is_correct", False),
+            "recommendation": result.get("recommendation", "")
+        }
+        
+    except Exception as e:
+        logger.error(f"ОШИБКА MCP: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    
 @app.get("/config")
 def get_config():
     return {

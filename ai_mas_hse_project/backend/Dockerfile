@@ -35,6 +35,13 @@ RUN pip install --no-cache-dir \
     transformers==4.37.2 \
     accelerate==0.26.1
 
+# MCP SDK и зависимости calculator_server.py
+RUN pip install --no-cache-dir \
+    "mcp>=1.0.0" \
+    matplotlib \
+    scipy \
+    sympy
+
 # Копируем код
 COPY . .
 
