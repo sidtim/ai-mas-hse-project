@@ -1,13 +1,11 @@
 """
-MCP Math Solver Agent
-Интеграция MCP инструментов в систему агентов
+MCP Math Solver Agent - упрощенная версия только с LLM
 """
 
 import asyncio
 import json
 import os
 import sys
-import re
 from contextlib import AsyncExitStack
 from typing import Any, Dict, List, Optional
 
@@ -66,6 +64,7 @@ class MCPClient:
         tools_result = await self.session.list_tools()
         self.tools = tools_result.tools if hasattr(tools_result, 'tools') else list(tools_result)
         
+        print(f"✅ MCP подключен, доступно инструментов: {len(self.tools)}")
         return self
     
     async def call_tool(self, tool_name: str, arguments: Dict[str, Any]) -> Dict:
@@ -73,13 +72,17 @@ class MCPClient:
         if not self.session:
             raise RuntimeError("MCP клиент не подключен")
         
-        result = await self.session.call_tool(tool_name, arguments)  # ← ИСПРАВЛЕНО
+        print(f"🔧 Вызов инструмента: {tool_name}({arguments})")
+        result = await self.session.call_tool(tool_name, arguments)
         
         if result.content and len(result.content) > 0:
             text = result.content[0].text
             try:
-                return json.loads(text)
+                parsed = json.loads(text)
+                print(f"📥 Результат: {parsed}")
+                return parsed
             except json.JSONDecodeError:
+                print(f"📥 Результат (raw): {text[:100]}")
                 return {"result": text}
         return {"result": str(result.content)}
     
@@ -92,7 +95,7 @@ class MCPClient:
 
 
 class MCPSolverAgent:
-    """Агент-решатель с использованием MCP инструментов"""
+    """Агент-решатель с использованием MCP инструментов - только LLM"""
     
     def __init__(self):
         self.llm = get_llm()
@@ -106,7 +109,7 @@ class MCPSolverAgent:
             self._connected = True
     
     def _create_tools_prompt(self) -> str:
-        """Создание системного промпта с описанием инструментов"""
+        """Создание описания инструментов для LLM"""
         tools_desc = []
         for tool in self.mcp_client.tools:
             params = []
@@ -118,241 +121,92 @@ class MCPSolverAgent:
             
             desc = getattr(tool, 'description', 'No description')
             tools_desc.append(
-                f"- {tool.name}({', '.join(params)}): {desc[:80]}..."
+                f"Tool: {tool.name}\n"
+                f"  Description: {desc[:100]}...\n"
+                f"  Parameters: {', '.join(params) if params else 'none'}"
             )
         
-        return "\n".join(tools_desc)
+        return "\n\n".join(tools_desc)
     
-    def _detect_tool_hint(self, problem: str) -> str:
-        """Автоматическое определение нужного инструмента по тексту задачи"""
-        p = problem.lower()
-        
-        # Уравнения с переменными (x, y, z) и =
-        if "=" in p and any(c in p for c in ["x", "y", "z"]):
-            return "💡 Это УРАВНЕНИЕ. Используй solve_equation с аргументом 'equation' (строка с '=')."
-        
-        # Производные
-        elif any(word in p for word in ["производн", "дифференц", "производная"]):
-            return "💡 Это ПРОИЗВОДНАЯ. Используй differentiate с аргументами 'expression' и 'variable'='x'."
-        
-        # Интегралы
-        elif any(word in p for word in ["интеграл", "интегрирование", "первообразная"]):
-            return "💡 Это ИНТЕГРАЛ. Используй integrate с аргументами 'expression' и 'variable'='x'."
-        
-        # Статистика
-        elif any(word in p for word in ["среднее", "средн", "mean", "average"]):
-            return "💡 Это СТАТИСТИКА. Используй mean с аргументом 'data' (список чисел, например [1, 2, 3])."
-        
-        # По умолчанию
-        else:
-            return "💡 Используй calculate для простых вычислений."
-    
-    def _extract_equation(self, problem: str) -> Optional[str]:
-        """Извлечение уравнения из текста задачи"""
-        p = problem.lower()
-        
-        # Убираем целые слова с границами (чтобы "сначала" не оставило "x")
-        words_to_remove = ["реши", "систему", "уравнение", "найди", "из", "сначала", "потом", "что", "корни", "какие"]
-        for word in words_to_remove:
-            p = re.sub(r'\b' + word + r'\b', ' ', p)
-        
-        p = re.sub(r'\s+', ' ', p).strip()
-        print(f"После очистки: {p}")
-        
-        # Ищем уравнение вида x**2 - 9 = 0 или x^2 - 9 = 0
-        patterns = [
-            r'(x\*\*\d+\s*[\+\-]\s*\d+\s*=\s*\d+)',  # x**2 - 9 = 0
-            r'(x\*\*\d+\s*=\s*\d+)',                   # x**2 = 9
-            r'(x\^\d+\s*[\+\-]\s*\d+\s*=\s*\d+)',      # x^2 - 9 = 0
-            r'(x\^\d+\s*=\s*\d+)',                     # x^2 = 9
-            r'([x\d\s\+\-\*\(\)]+=[x\d\s\+\-\*\(\)]+)', # общий случай
-        ]
-        
-        for pattern in patterns:
-            match = re.search(pattern, p)
-            if match:
-                eq = match.group(1).replace(" ", "").replace("^", "**")
-                print(f"Найдено уравнение: {eq}")
-                if 'x' in eq and '=' in eq:
-                    return eq
-        
-        return None
-    
-    def _extract_expression(self, problem: str) -> Optional[str]:
-        """Извлечение математического выражения из текста"""
-        p = problem.lower()
-        
-        # Ищем после "от", "=", "функции"
-        patterns = [
-            r'от\s+([x\d\s\+\-\*\^\(\)]+?)(?:\s|$)',      # "интеграл от 2*x"
-            r'=\s*([x\d\s\+\-\*\^\(\)]+?)(?:\s|$)',       # "f(x) = x**2"
-            r'функции?\s+([x\d\s\+\-\*\^\(\)]+?)(?:\s|$)', # "функции x**2"
-        ]
-        
-        for pattern in patterns:
-            match = re.search(pattern, p)
-            if match:
-                expr = match.group(1).strip().replace("^", "**")
-                if 'x' in expr:
-                    return expr
-        return None
-    
-    async def solve_direct(self, problem: str) -> Dict[str, Any]:
+    async def solve(self, problem: str, max_iterations: int = 5) -> Dict[str, Any]:
         """
-        Прямое решение без LLM-итераций — быстро и надежно
-        ИСПРАВЛЕНО: лучшее извлечение уравнений
+        Решение задачи через LLM + MCP инструменты
+        БЕЗ регулярных выражений - только LLM решает какой инструмент использовать
         """
         await self.ensure_connected()
         
-        p = problem.lower()
-        tool_calls = []
-        
-        # Паттерн 1: Уравнение с '=' и 'x'
-        if "=" in p and "x" in p:
-            equation = self._extract_equation(problem)
-            if equation:
-                print(f"Извлечено уравнение: {equation}")
-                result = await self.mcp_client.call_tool(
-                    "solve_equation", 
-                    {"equation": equation}
-                )
-                tool_calls.append({
-                    "tool": "solve_equation", 
-                    "arguments": {"equation": equation},
-                    "result": result
-                })
-                
-                # Форматируем ответ красиво
-                solutions = result.get("solutions", "неизвестно")
-                return {
-                    "answer": f"x = {solutions}",
-                    "full_response": f"Решено уравнение {equation}. Корни: {solutions}",
-                    "tool_calls": tool_calls,
-                    "iterations": 1
-                }
-            else:
-                print("Уравнение не распознано, пробуем LLM")
-        
-        # Паттерн 2: Производная
-        elif "производн" in p:
-            expr = self._extract_expression(problem)
-            if expr:
-                result = await self.mcp_client.call_tool(
-                    "differentiate",
-                    {"expression": expr, "variable": "x"}
-                )
-                tool_calls.append({
-                    "tool": "differentiate",
-                    "arguments": {"expression": expr, "variable": "x"},
-                    "result": result
-                })
-                return {
-                    "answer": result.get("result", "неизвестно"),
-                    "full_response": f"Производная от {expr}",
-                    "tool_calls": tool_calls,
-                    "iterations": 1
-                }
-        
-        # Паттерн 3: Интеграл
-        elif "интеграл" in p:
-            expr = self._extract_expression(problem)
-            if expr:
-                result = await self.mcp_client.call_tool(
-                    "integrate",
-                    {"expression": expr, "variable": "x"}
-                )
-                tool_calls.append({
-                    "tool": "integrate",
-                    "arguments": {"expression": expr, "variable": "x"},
-                    "result": result
-                })
-                return {
-                    "answer": result.get("result", "неизвестно"),
-                    "full_response": f"Интеграл от {expr}",
-                    "tool_calls": tool_calls,
-                    "iterations": 1
-                }
-        
-        # Паттерн 4: Среднее значение
-        elif "среднее" in p or "средн" in p:
-            numbers = re.findall(r'\d+', problem)
-            if len(numbers) >= 2:
-                data = [float(n) for n in numbers]
-                result = await self.mcp_client.call_tool(
-                    "mean",
-                    {"data": data}
-                )
-                tool_calls.append({
-                    "tool": "mean",
-                    "arguments": {"data": data},
-                    "result": result
-                })
-                return {
-                    "answer": str(result.get("result", "неизвестно")),
-                    "full_response": f"Среднее значение {data}",
-                    "tool_calls": tool_calls,
-                    "iterations": 1
-                }
-        
-        # Если не сработало — fallback на LLM
-        raise ValueError(f"Не удалось распознать задачу: {problem}")
-    
-    async def solve(self, problem: str, max_iterations: int = 3) -> Dict[str, Any]:
-        """
-        Решение задачи с использованием MCP инструментов
-        """
-        print(f"DEBUG solve(): получена задача: {problem}")
-        # Сначала пробуем быстрый прямой метод
-        try:
-            return await self.solve_direct(problem)
-        except Exception as e:
-            print(f"Прямое решение не сработало: {e}, переходим к LLM")
-        
-        # Fallback: LLM с улучшенным промптом
-        await self.ensure_connected()
-        
-        tool_hint = self._detect_tool_hint(problem)
-        
-        system_msg = f"""Ты математический ассистент с точными инструментами.
-
-ЗАДАЧА: {problem}
-
-{tool_hint}
+        system_msg = f"""Ты математический ассистент с доступом к точным вычислительным инструментам MCP.
 
 Доступные инструменты:
 {self._create_tools_prompt()}
 
-ВАЖНЫЕ ПРАВИЛА:
-1. Для уравнений с '=' и 'x' ВСЕГДА используй solve_equation
-2. Для производных используй differentiate с variable='x'  
-3. Для интегралов используй integrate с variable='x'
-4. Для среднего значения используй mean с data=[числа]
+Твоя задача:
+1. Проанализируй математическую задачу
+2. Выбери ПОДХОДЯЩИЙ инструмент из списка выше
+3. Подготовь правильные аргументы для вызова
+4. Вызови инструмент и получи результат
+5. Дай финальный ответ
 
-ФОРМАТ:
-TOOL_CALL: {{"tool": "имя_инструмента", "arguments": {{...}}}}
+ФОРМАТ ОТВЕТА (строго соблюдай):
 
-После результата:
-FINAL_ANSWER: [числовой ответ]"""
+Для вызова инструмента:
+TOOL_CALL: {{"tool": "имя_инструмента", "arguments": {{"параметр": "значение"}}}}
+
+После получения результата:
+FINAL_ANSWER: [числовой ответ или решение]
+
+ПРИМЕРЫ:
+
+Пример 1 - Уравнение:
+Задача: Реши x**2 - 5*x + 6 = 0
+TOOL_CALL: {{"tool": "solve_equation", "arguments": {{"equation": "x**2 - 5*x + 6 = 0"}}}}
+FINAL_ANSWER: x = 2, x = 3
+
+Пример 2 - Производная:
+Задача: Найди производную от x**3 + 2*x
+TOOL_CALL: {{"tool": "differentiate", "arguments": {{"expression": "x**3 + 2*x", "variable": "x"}}}}
+FINAL_ANSWER: 3*x**2 + 2
+
+Пример 3 - Среднее:
+Задача: Найди среднее 10, 20, 30
+TOOL_CALL: {{"tool": "mean", "arguments": {{"data": [10, 20, 30]}}}}
+FINAL_ANSWER: 20
+
+ВАЖНО:
+- Уравнения должны содержать '=' и переменную x/y/z
+- Для производных и интегралов указывай variable='x'
+- Для статистики передавай data как список чисел [1, 2, 3]
+- Используй Python синтаксис: ** для степеней, * для умножения
+
+Теперь реши задачу:"""
 
         messages = [
             SystemMessage(content=system_msg),
-            HumanMessage(content="Реши задачу одним вызовом инструмента.")
+            HumanMessage(content=f"Задача: {problem}")
         ]
         
         tool_calls = []
         
         for i in range(max_iterations):
-            response = await self.llm.ainvoke(messages)
-            content = response.content
+            print(f"\n🔄 Итерация {i+1}/{max_iterations}")
             
+            response = await self.llm.ainvoke(messages)
+            content = response.content.strip()
+            print(f"🤖 LLM: {content[:200]}...")
+            
+            # Проверяем вызов инструмента
             if "TOOL_CALL:" in content:
                 try:
-                    json_str = content.split("TOOL_CALL:")[1].strip().split("\n")[0]
-                    call = json.loads(json_str)
+                    # Извлекаем JSON
+                    json_str = content.split("TOOL_CALL:")[1].strip()
+                    if "\n" in json_str:
+                        json_str = json_str.split("\n")[0]
                     
+                    call = json.loads(json_str)
                     tool_name = call.get("tool")
                     arguments = call.get("arguments", {})
                     
+                    # Вызываем инструмент
                     result = await self.mcp_client.call_tool(tool_name, arguments)
                     tool_calls.append({
                         "tool": tool_name,
@@ -360,23 +214,28 @@ FINAL_ANSWER: [числовой ответ]"""
                         "result": result
                     })
                     
-                    answer = str(result.get("solutions", result.get("result", "неизвестно")))
-                    
-                    return {
-                        "full_response": content,
-                        "answer": answer,
-                        "tool_calls": tool_calls,
-                        "iterations": i + 1
-                    }
-                    
-                except Exception as e:
+                    # Добавляем результат в контекст
                     messages.extend([
                         AIMessage(content=content),
-                        HumanMessage(content=f"Ошибка: {e}. Попробуй снова.")
+                        SystemMessage(content=f"Результат инструмента: {json.dumps(result, ensure_ascii=False)}")
+                    ])
+                    
+                    # Если получили решение - сразу даем ответ
+                    if "solutions" in result or "result" in result:
+                        # Просим LLM сформулировать финальный ответ
+                        messages.append(HumanMessage(content="Сформулируй FINAL_ANSWER на основе результата"))
+                        continue
+                    
+                except Exception as e:
+                    print(f"❌ Ошибка вызова: {e}")
+                    messages.extend([
+                        AIMessage(content=content),
+                        SystemMessage(content=f"Ошибка: {e}. Попробуй снова с правильным форматом TOOL_CALL.")
                     ])
                     
             elif "FINAL_ANSWER:" in content:
                 answer = content.split("FINAL_ANSWER:")[1].strip()
+                print(f"✅ Ответ: {answer}")
                 return {
                     "full_response": content,
                     "answer": answer,
@@ -384,11 +243,13 @@ FINAL_ANSWER: [числовой ответ]"""
                     "iterations": i + 1
                 }
             else:
+                # Нет ни инструмента, ни ответа
                 messages.extend([
                     AIMessage(content=content),
-                    HumanMessage(content="Используй TOOL_CALL:")
+                    HumanMessage(content="Ты должен использовать TOOL_CALL: для вызова инструмента или FINAL_ANSWER: для ответа.")
                 ])
         
+        # Достигли лимита
         return {
             "full_response": messages[-1].content if messages else "",
             "answer": "Не удалось получить ответ",
