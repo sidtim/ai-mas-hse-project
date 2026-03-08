@@ -179,6 +179,7 @@ async def solve_with_mcp(request: SolveRequest):
     Более точные математические вычисления через sympy/numpy.
     """
     logger.info(f"=== MCP РЕШЕНИЕ ===")
+    logger.info(f"Получена задача: {request.problem}")
     try:
         from graph.workflow import MCPMathWorkflow
         wf = MCPMathWorkflow()

@@ -134,8 +134,7 @@ class MathWorkflow:
         return graph.invoke(initial_state)
     
 
-# ======================= MCP SOLVER ======================= #
-
+# ======================= MCP SOLVER (ИСПРАВЛЕННЫЙ) ======================= #
 
 class MCPAgentState(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
@@ -154,39 +153,35 @@ class MCPAgentState(TypedDict):
 
 
 class MCPMathWorkflow:
-    """Workflow с использованием MCP для решения"""
+    """Workflow с использованием MCP для решения — БЕЗ генерации новой задачи"""
     
     def __init__(self):
-        self.generator = GeneratorAgent()
         self.mcp_solver = MCPSolverAgent()
         self.reviewer = ReviewerAgent()
         
-        # Создаем граф
+        # Создаем граф ТОЛЬКО для решения и проверки
         builder = StateGraph(MCPAgentState)
         
-        builder.add_node("generate", self._generate_node)
+        # УБРАНО: builder.add_node("generate", ...)
         builder.add_node("mcp_solve", self._mcp_solve_node)
         builder.add_node("review", self._review_node)
         
-        builder.set_entry_point("generate")
-        builder.add_edge("generate", "mcp_solve")
+        # Стартуем СРАЗУ с решения, без генерации
+        builder.set_entry_point("mcp_solve")
         builder.add_edge("mcp_solve", "review")
         builder.add_edge("review", END)
         
         self.graph = builder.compile()
     
-    async def _generate_node(self, state: MCPAgentState) -> dict:
-        """Генерация задачи"""
-        result = self.generator.generate(state["topic"])
-        return {
-            "problem": result["problem"],
-            "ground_truth": result["ground_truth"],
-            "messages": []
-        }
+    # УБРАНО: async def _generate_node(self, state: MCPAgentState) → не нужна!
     
     async def _mcp_solve_node(self, state: MCPAgentState) -> dict:
-        """Решение через MCP"""
-        result = await self.mcp_solver.solve(state["problem"])
+        """Решение через MCP — используем ПЕРЕДАННУЮ задачу"""
+        problem = state.get("problem", "")
+        print(f"DEBUG _mcp_solve_node: problem = {problem[:100]}...")
+        
+        result = await self.mcp_solver.solve(problem)
+        
         return {
             "mcp_answer": result["answer"],
             "mcp_full_response": result["full_response"],
@@ -213,16 +208,14 @@ class MCPMathWorkflow:
             "messages": []
         }
     
-    def generate_only(self, topic: str) -> dict:
-        """Только генерация"""
-        return self.generator.generate(topic)
-    
     async def solve_with_mcp(self, problem: str, user_solution: str = "", ground_truth: str = "") -> dict:
-        """Решение задачи через MCP и проверка"""
+        """Решение задачи через MCP и проверка — используем ПЕРЕДАННЫЕ параметры"""
+        print(f"DEBUG solve_with_mcp: problem = {problem[:100]}...")
+        
         initial_state = {
             "messages": [],
             "topic": "",
-            "problem": problem,
+            "problem": problem,  # ← Используем ПЕРЕДАННУЮ задачу!
             "ground_truth": ground_truth,
             "user_solution": user_solution,
             "mcp_answer": "",
