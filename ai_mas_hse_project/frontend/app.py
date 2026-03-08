@@ -139,8 +139,10 @@ if st.session_state.get("result_shown", False):
         analysis = result["agent_analysis"]
         
         # Карточка результата
-        if analysis.get("is_correct", False):
+        if analysis.get("is_correct", False) and analysis.get("reviewer_verdict", False) == "ВЕРНО":
             st.success("✅ **ПРАВИЛЬНО!**")
+        elif analysis.get("is_correct", False) and analysis.get("reviewer_verdict", False) == "ОШИБКА В РЕШЕНИИ":
+            st.warning("⚠️ **Ответ верный, но есть ошибка в решении!**")
         else:
             st.error("❌ **ОШИБКА**")
         
