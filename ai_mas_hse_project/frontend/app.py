@@ -91,7 +91,7 @@ with col1:
         )
         st.session_state.difficulty = difficulty
     else:
-        st.info("🧮 Режим MCP: точные математические вычисления через SymPy/NumPy")
+        st.info("🧮 Режим MCP: точные математические вычисления через SymPy/NumPy/SciPy")
 
 with col2:
     st.write("")
