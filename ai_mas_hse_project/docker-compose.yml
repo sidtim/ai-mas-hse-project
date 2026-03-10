@@ -15,7 +15,7 @@ services:
       - PYTHONUNBUFFERED=1
     volumes:
       - ./backend:/app
-      - ./calculator_server.py:/app/calculator_server.py  # <-- Добавить MCP сервер
+      #- ./calculator_server.py:/app/calculator_server.py  # <-- Добавить MCP сервер
       - model-cache:/root/.cache/huggingface
       - ./static_dataset:/app/static_dataset
 
