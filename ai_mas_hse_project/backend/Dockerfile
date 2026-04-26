@@ -33,14 +33,20 @@ RUN pip install --no-cache-dir \
     pydantic==2.5.3 \
     python-dotenv==1.0.0 \
     transformers==4.37.2 \
-    accelerate==0.26.1
+    accelerate==0.26.1 \
+    starlette==0.35.1
 
 # MCP SDK и зависимости calculator_server.py
+# ================= !!!!!!!!!!!!!!!!!!!!!! =================
+# Установка "mcp>=1.0.0" ведет за собой установку другой версии библиотеки starlette из-за чего ломается работа FastAPI и Backend-части в целом
+# Поэтому я в этом install дублирую в конце установку starlette==0.35.1, чтобы все работало корректно
+# ================= !!!!!!!!!!!!!!!!!!!!!! =================
 RUN pip install --no-cache-dir \
     "mcp>=1.0.0" \
     matplotlib \
     scipy \
-    sympy
+    sympy \
+    starlette==0.35.1
 
 # Копируем код
 COPY . .
