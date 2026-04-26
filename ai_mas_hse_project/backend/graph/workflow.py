@@ -7,7 +7,6 @@ from langchain_core.messages import AnyMessage
 from agents.generator import GeneratorAgent
 from agents.solver import SolverAgent
 from agents.reviewer import ReviewerAgent
-
 from agents.mcp_solver import MCPSolverAgent, MCPClient
 
 
@@ -16,14 +15,21 @@ class AgentState(TypedDict):
     topic: str
     problem: str
     ground_truth: str
-    user_solution: str  # Ответ, предоставленный пользователем (для проверки)
-    solver_answer: str  # Ответ, полученный от SolverAgent
-    solver_full: str    # Полное решение от SolverAgent
+    user_solution: str
+    solver_answer: str
+    solver_full: str
     review_verdict: str
     is_correct: bool
-    answer_analysis: str # Анализ ответа от оценщика
-    solution_analysis: str # Анализ решения от оценщика
-    recommendation: str # # Рекомендации от оценщика
+    answer_analysis: str
+    solution_analysis: str
+    recommendation: str
+    # Дополнительные поля для статистики
+    gen_usage: dict
+    gen_time: float
+    solver_usage: dict
+    solver_time: float
+    review_usage: dict
+    review_time: float
 
 
 class MathWorkflow:
@@ -31,68 +37,61 @@ class MathWorkflow:
         self.generator = GeneratorAgent()
         self.solver = SolverAgent()
         self.reviewer = ReviewerAgent()
-        
-        # Строим граф
+
         builder = StateGraph(AgentState)
-        
         builder.add_node("generate", self._generate_node)
         builder.add_node("solve", self._solve_node)
         builder.add_node("review", self._review_node)
-        
-        # Полный pipeline: генерация -> решение -> проверка пользовательского ответа
+
         builder.set_entry_point("generate")
         builder.add_edge("generate", "solve")
         builder.add_edge("solve", "review")
         builder.add_edge("review", END)
-        
         self.graph = builder.compile()
-    
+
     def _generate_node(self, state: AgentState) -> dict:
         result = self.generator.generate(state["topic"])
         return {
             "problem": result["problem"],
             "ground_truth": result["ground_truth"],
-            "messages": []
+            "gen_usage": result.get("usage", {}),
+            "gen_time": result.get("execution_time", 0.0),
+            "messages": [],
         }
-    
+
     def _solve_node(self, state: AgentState) -> dict:
         result = self.solver.solve(state["problem"])
         return {
             "solver_answer": result["solver_answer"],
             "solver_full": result["solver_full"],
-            "messages": []
+            "solver_usage": result.get("usage", {}),
+            "solver_time": result.get("execution_time", 0.0),
+            "messages": [],
         }
-    
+
     def _review_node(self, state: AgentState) -> dict:
-        # Проверяем ответ ПОЛЬЗОВАТЕЛЯ (user_solution) против ground_truth
-        # Если нужно проверять решение solver'а — замените state["user_solution"] на state["solver_answer"]
         result = self.reviewer.review(
             solver_answer=state["user_solution"],
-            ground_truth=state["ground_truth"]
+            ground_truth=state["ground_truth"],
         )
         return {
             "review_verdict": result["verdict"],
             "is_correct": result["is_correct"],
-            "answer_analysis": result["answer_analysis"],
-            "solution_analysis": result["solution_analysis"],
-            "recommendation": result["recommendation"],
-            "messages": []
+            "answer_analysis": result.get("answer_analysis", ""),
+            "solution_analysis": result.get("solution_analysis", ""),
+            "recommendation": result.get("recommendation", ""),
+            "review_usage": result.get("usage", {}),
+            "review_time": result.get("execution_time", 0.0),
+            "messages": [],
         }
-    
-    # def generate_only(self, topic: str) -> dict:
-    #     """Только генерация задачи (для первого эндпоинта)"""
-    #     return self.generator.generate(topic)
 
     def generate_only(self, topic: str, difficulty: str = "средний") -> dict:
-        """Генерация задачи 'по примеру' с учётом сложности."""
         return self.generator.generate_by_example(topic, difficulty)
-    
+
     def generate_only_static(self, topic: str, difficulty: str = "средний") -> dict:
-        """Только генерация статической задачи (для первого эндпоинта)"""
-        return self.generator.generate_static_task(topic, difficulty) # return self.generator.generate_static_task(topic)
-    
+        return self.generator.generate_static_task(topic, difficulty)
+
     def full_pipeline(self, topic: str, problem: str, user_solution: str, ground_truth: str) -> dict:
-        """Полный pipeline: решение + проверка (без генерации, задача предоставлена извне)"""
         initial_state = {
             "messages": [],
             "topic": topic,
@@ -102,24 +101,29 @@ class MathWorkflow:
             "solver_answer": "",
             "solver_full": "",
             "review_verdict": "",
-            "is_correct": False
+            "is_correct": False,
+            "answer_analysis": "",
+            "solution_analysis": "",
+            "recommendation": "",
+            "gen_usage": {},
+            "gen_time": 0.0,
+            "solver_usage": {},
+            "solver_time": 0.0,
+            "review_usage": {},
+            "review_time": 0.0,
         }
-        
-        result = self.graph.invoke(initial_state)
-        return result
-    
+        return self.graph.invoke(initial_state)
+
     def solve_and_review(self, problem: str, user_solution: str, ground_truth: str) -> dict:
-        """Pipeline только для решения и проверки (без генерации)"""
-        # Создаем временный граф без generate
+        # Временный граф без generate
         builder = StateGraph(AgentState)
         builder.add_node("solve", self._solve_node)
         builder.add_node("review", self._review_node)
         builder.set_entry_point("solve")
         builder.add_edge("solve", "review")
         builder.add_edge("review", END)
-        
         graph = builder.compile()
-        
+
         initial_state = {
             "messages": [],
             "topic": "",
@@ -133,13 +137,19 @@ class MathWorkflow:
             "answer_analysis": "",
             "solution_analysis": "",
             "recommendation": "",
+            "gen_usage": {},
+            "gen_time": 0.0,
+            "solver_usage": {},
+            "solver_time": 0.0,
+            "review_usage": {},
+            "review_time": 0.0,
         }
-        
-        return graph.invoke(initial_state)
-    
+        result = graph.invoke(initial_state)
+        # result теперь содержит все поля статистики
+        return result
 
-# ======================= MCP SOLVER (ИСПРАВЛЕННЫЙ) ======================= #
 
+# ======================= MCP SOLVER ======================= #
 class MCPAgentState(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
     topic: str
@@ -154,72 +164,60 @@ class MCPAgentState(TypedDict):
     answer_analysis: str
     solution_analysis: str
     recommendation: str
+    # статистика
+    mcp_usage: dict
+    mcp_time: float
+    review_usage: dict
+    review_time: float
 
 
 class MCPMathWorkflow:
-    """Workflow с использованием MCP для решения — БЕЗ генерации новой задачи"""
-    
     def __init__(self):
         self.mcp_solver = MCPSolverAgent()
         self.reviewer = ReviewerAgent()
-        
-        # Создаем граф ТОЛЬКО для решения и проверки
+
         builder = StateGraph(MCPAgentState)
-        
-        # УБРАНО: builder.add_node("generate", ...)
         builder.add_node("mcp_solve", self._mcp_solve_node)
         builder.add_node("review", self._review_node)
-        
-        # Стартуем СРАЗУ с решения, без генерации
         builder.set_entry_point("mcp_solve")
         builder.add_edge("mcp_solve", "review")
         builder.add_edge("review", END)
-        
         self.graph = builder.compile()
-    
-    # УБРАНО: async def _generate_node(self, state: MCPAgentState) → не нужна!
-    
+
     async def _mcp_solve_node(self, state: MCPAgentState) -> dict:
-        """Решение через MCP — используем ПЕРЕДАННУЮ задачу"""
         problem = state.get("problem", "")
-        print(f"DEBUG _mcp_solve_node: problem = {problem[:100]}...")
-        
         result = await self.mcp_solver.solve(problem)
-        
         return {
             "mcp_answer": result["answer"],
             "mcp_full_response": result["full_response"],
             "mcp_tool_calls": result["tool_calls"],
-            "messages": []
+            "mcp_usage": result.get("usage", {}),
+            "mcp_time": result.get("execution_time", 0.0),
+            "messages": [],
         }
-    
+
     async def _review_node(self, state: MCPAgentState) -> dict:
-        """Проверка решения"""
-        # Проверяем ответ пользователя или MCP солвера
         answer_to_check = state.get("user_solution") or state.get("mcp_answer", "")
-        
         result = self.reviewer.review(
             solver_answer=answer_to_check,
-            ground_truth=state["ground_truth"]
+            ground_truth=state["ground_truth"],
         )
-        
         return {
             "review_verdict": result["verdict"],
             "is_correct": result["is_correct"],
-            "answer_analysis": result["answer_analysis"],
-            "solution_analysis": result["solution_analysis"],
-            "recommendation": result["recommendation"],
-            "messages": []
+            "answer_analysis": result.get("answer_analysis", ""),
+            "solution_analysis": result.get("solution_analysis", ""),
+            "recommendation": result.get("recommendation", ""),
+            "review_usage": result.get("usage", {}),
+            "review_time": result.get("execution_time", 0.0),
+            "messages": [],
         }
-    
+
     async def solve_with_mcp(self, problem: str, user_solution: str = "", ground_truth: str = "") -> dict:
-        """Решение задачи через MCP и проверка — используем ПЕРЕДАННЫЕ параметры"""
-        print(f"DEBUG solve_with_mcp: problem = {problem[:100]}...")
-        
         initial_state = {
             "messages": [],
             "topic": "",
-            "problem": problem,  # ← Используем ПЕРЕДАННУЮ задачу!
+            "problem": problem,
             "ground_truth": ground_truth,
             "user_solution": user_solution,
             "mcp_answer": "",
@@ -230,6 +228,20 @@ class MCPMathWorkflow:
             "answer_analysis": "",
             "solution_analysis": "",
             "recommendation": "",
+            "mcp_usage": {},
+            "mcp_time": 0.0,
+            "review_usage": {},
+            "review_time": 0.0,
         }
-        
-        return await self.graph.ainvoke(initial_state)
+        result = await self.graph.ainvoke(initial_state)
+        # Для совместимости с main.py собираем общее usage и время
+        mcp_usage = result.get("mcp_usage", {})
+        review_usage = result.get("review_usage", {})
+        total_usage = {
+            "input_tokens": mcp_usage.get("input_tokens", 0) + review_usage.get("input_tokens", 0),
+            "output_tokens": mcp_usage.get("output_tokens", 0) + review_usage.get("output_tokens", 0),
+        }
+        total_time = result.get("mcp_time", 0.0) + result.get("review_time", 0.0)
+        result["usage"] = total_usage
+        result["execution_time"] = total_time
+        return result

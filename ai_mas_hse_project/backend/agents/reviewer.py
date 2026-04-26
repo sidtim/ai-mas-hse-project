@@ -1,37 +1,25 @@
 from langchain_core.messages import SystemMessage, HumanMessage
 from config import get_llm
-
-# SYSTEM_PROMPT = """Ты проверяющий. Сравни ответ ученика с правильным ответом.
-
-# Ответь одним словом:
-# ПРАВИЛЬНО — если ответы совпадают (допускаются небольшие отличия в формате)
-# НЕПРАВИЛЬНО — если ответы разные
-
-# Не объясняй, просто скажи ПРАВИЛЬНО или НЕПРАВИЛЬНО."""
+import time
 
 
-# class ReviewerAgent:
-#     def __init__(self):
-#         self.llm = get_llm()
-    
-#     def review(self, solver_answer: str, ground_truth: str = None) -> dict:
-#         gt_text = ground_truth if ground_truth else "не предоставлен"
-        
-#         messages = [
-#             SystemMessage(content=SYSTEM_PROMPT),
-#             HumanMessage(content=f"Ответ ученика: {solver_answer}\nПравильный ответ: {gt_text}")
-#         ]
-        
-#         response = self.llm.invoke(messages)
-#         text = response.content.strip().upper()
-        
-#         is_correct = "ПРАВИЛЬНО" in text or "CORRECT" in text
-        
-#         return {
-#             "full_response": response.content,
-#             "verdict": "ПРАВИЛЬНО" if is_correct else "НЕПРАВИЛЬНО",
-#             "is_correct": is_correct
-#         }
+# ------------------------------------------------------------
+# Универсальная функция извлечения токенов (совместимость версий)
+# ------------------------------------------------------------
+def _get_token_usage(response):
+    if hasattr(response, 'usage_metadata') and response.usage_metadata:
+        inp = response.usage_metadata.get("input_tokens", 0)
+        out = response.usage_metadata.get("output_tokens", 0)
+        return inp, out
+
+    if hasattr(response, 'response_metadata'):
+        token_usage = response.response_metadata.get("token_usage", {})
+        inp = token_usage.get("prompt_tokens", 0)
+        out = token_usage.get("completion_tokens", 0)
+        return inp, out
+
+    return 0, 0
+
 
 SYSTEM_PROMPT = """
 Ты — опытный педагог-эксперт по проверке математических решений. Твоя задача — не просто сверить ответ, а глубоко проанализировать логику решения ученика.
@@ -73,9 +61,11 @@ class ReviewerAgent:
             HumanMessage(content=f"Ответ ученика:\n{solver_answer}\n\nПравильный ответ:\n{gt_text}")
         ]
         
+        start = time.time()
         response = self.llm.invoke(messages)
+        exec_time = time.time() - start
+
         text = response.content.strip()
-        
         # Парсинг структурированного ответа
         lines = text.split('\n')
         result = {
@@ -99,5 +89,11 @@ class ReviewerAgent:
                 result["solution_analysis"] = line.replace("АНАЛИЗ РЕШЕНИЯ:", "").strip()
             elif line.startswith("РЕКОМЕНДАЦИЯ:"):
                 result["recommendation"] = line.replace("РЕКОМЕНДАЦИЯ:", "").strip()
+
+        inp_tokens, out_tokens = _get_token_usage(response)
+        usage = {"input_tokens": inp_tokens, "output_tokens": out_tokens}
+
+        result["usage"] = usage
+        result["execution_time"] = exec_time
         
         return result

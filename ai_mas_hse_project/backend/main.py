@@ -70,8 +70,10 @@ def generate_task(request: GenerateRequest):
 
         return GenerateResponse(
             problem=result["problem"],
-            ground_truth=result["ground_truth"]
-            # solution не возвращаем пользователю
+            ground_truth=result["ground_truth"],
+            generation_time_seconds=result.get("execution_time"),
+            input_tokens=result["usage"]["input_tokens"],
+            output_tokens=result["usage"]["output_tokens"]
         )
     except Exception as e:
         logger.error(f"ОШИБКА: {str(e)}", exc_info=True)
@@ -105,7 +107,10 @@ def generate_task_static(request: GenerateRequest):
         logger.info(f"УСПЕХ: {result.get('problem', 'НЕТ')[:50]}...")
         return GenerateResponse(
             problem=result["problem"],
-            ground_truth=result["ground_truth"]
+            ground_truth=result["ground_truth"],
+            generation_time_seconds=result.get("execution_time"),
+            input_tokens=0,  # статическая выборка не использует LLM
+            output_tokens=0
         )
     except Exception as e:
         logger.error(f"ОШИБКА: {str(e)}", exc_info=True)
@@ -129,6 +134,12 @@ def solve_task(request: SolveRequest):
             user_solution=request.user_solution,
             ground_truth=request.ground_truth or ""
         )
+
+        solver_usage = result.get("solver_usage", {})
+        review_usage = result.get("review_usage", {})
+        total_input = solver_usage.get("input_tokens", 0) + review_usage.get("input_tokens", 0)
+        total_output = solver_usage.get("output_tokens", 0) + review_usage.get("output_tokens", 0)
+        total_time = result.get("solver_time", 0) + result.get("review_time", 0)
         
         logger.info(f"Результат решения: solver={result.get('solver_answer', 'N/A')}")
         logger.info(f"Результат проверки: {result.get('review_verdict', 'НЕИЗВЕСТНО')}")
@@ -143,6 +154,9 @@ def solve_task(request: SolveRequest):
                 answer_analysis=result.get("answer_analysis", ""),
                 solution_analysis=result.get("solution_analysis", ""),
                 recommendation=result.get("recommendation", ""),
+                generation_time_seconds=total_time,
+                input_tokens=total_input,
+                output_tokens=total_output
             )
         )
     except Exception as e:
@@ -264,7 +278,11 @@ async def solve_with_mcp(request: SolveRequest):
             "mcp_tool_calls": result.get("mcp_tool_calls", []),
             "review_verdict": result.get("review_verdict", ""),
             "is_correct": result.get("is_correct", False),
-            "recommendation": result.get("recommendation", "")
+            "recommendation": result.get("recommendation", ""),
+            # добавляем статистику
+            "generation_time_seconds": result.get("execution_time", 0),
+            "input_tokens": result.get("usage", {}).get("input_tokens", 0),
+            "output_tokens": result.get("usage", {}).get("output_tokens", 0)
         }
         
     except Exception as e:

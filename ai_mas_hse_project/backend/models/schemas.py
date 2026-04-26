@@ -9,6 +9,9 @@ class GenerateRequest(BaseModel):
 class GenerateResponse(BaseModel):
     problem: str
     ground_truth: str
+    generation_time_seconds: Optional[float] = None
+    input_tokens: Optional[int] = 0
+    output_tokens: Optional[int] = 0
 
 class SolveRequest(BaseModel):
     problem: str
@@ -22,6 +25,9 @@ class AgentResult(BaseModel):
     answer_analysis: Optional[str] = None
     solution_analysis: Optional[str] = None
     recommendation: Optional[str] = None
+    generation_time_seconds: Optional[float] = None   # общее время на обработку запроса
+    input_tokens: Optional[int] = 0
+    output_tokens: Optional[int] = 0
     
 
 class SolveResponse(BaseModel):

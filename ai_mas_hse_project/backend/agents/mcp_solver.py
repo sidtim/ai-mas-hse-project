@@ -8,11 +8,30 @@ import os
 import sys
 from contextlib import AsyncExitStack
 from typing import Any, Dict, List, Optional
+import time
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
-from langchain_core.messages import HumanMessage, SystemMessage, AIMessage, ToolMessage
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from config import get_llm
+
+
+# ------------------------------------------------------------
+# Универсальная функция извлечения токенов (совместимость версий)
+# ------------------------------------------------------------
+def _get_token_usage(response):
+    if hasattr(response, 'usage_metadata') and response.usage_metadata:
+        inp = response.usage_metadata.get("input_tokens", 0)
+        out = response.usage_metadata.get("output_tokens", 0)
+        return inp, out
+
+    if hasattr(response, 'response_metadata'):
+        token_usage = response.response_metadata.get("token_usage", {})
+        inp = token_usage.get("prompt_tokens", 0)
+        out = token_usage.get("completion_tokens", 0)
+        return inp, out
+
+    return 0, 0
 
 
 class MCPClient:
@@ -129,10 +148,6 @@ class MCPSolverAgent:
         return "\n\n".join(tools_desc)
     
     async def solve(self, problem: str, max_iterations: int = 5) -> Dict[str, Any]:
-        """
-        Решение задачи через LLM + MCP инструменты
-        БЕЗ регулярных выражений - только LLM решает какой инструмент использовать
-        """
         await self.ensure_connected()
         
         system_msg = f"""Ты математический ассистент с доступом к точным вычислительным инструментам MCP.
@@ -186,11 +201,20 @@ class MCPSolverAgent:
         ]
         
         tool_calls = []
+
+        total_input = 0
+        total_output = 0
+        start = time.time()
         
         for i in range(max_iterations):
             print(f"\n🔄 Итерация {i+1}/{max_iterations}")
             
             response = await self.llm.ainvoke(messages)
+            # Безопасно накапливаем токены
+            inp, out = _get_token_usage(response)
+            total_input += inp
+            total_output += out
+
             content = response.content.strip()
             print(f"🤖 LLM: {content[:200]}...")
             
@@ -222,7 +246,6 @@ class MCPSolverAgent:
                     
                     # Если получили решение - сразу даем ответ
                     if "solutions" in result or "result" in result:
-                        # Просим LLM сформулировать финальный ответ
                         messages.append(HumanMessage(content="Сформулируй FINAL_ANSWER на основе результата"))
                         continue
                     
@@ -236,26 +259,30 @@ class MCPSolverAgent:
             elif "FINAL_ANSWER:" in content:
                 answer = content.split("FINAL_ANSWER:")[1].strip()
                 print(f"✅ Ответ: {answer}")
+                exec_time = time.time() - start
                 return {
                     "full_response": content,
                     "answer": answer,
                     "tool_calls": tool_calls,
-                    "iterations": i + 1
+                    "iterations": i + 1,
+                    "usage": {"input_tokens": total_input, "output_tokens": total_output},
+                    "execution_time": exec_time
                 }
             else:
-                # Нет ни инструмента, ни ответа
                 messages.extend([
                     AIMessage(content=content),
                     HumanMessage(content="Ты должен использовать TOOL_CALL: для вызова инструмента или FINAL_ANSWER: для ответа.")
                 ])
         
-        # Достигли лимита
+        exec_time = time.time() - start
         return {
             "full_response": messages[-1].content if messages else "",
             "answer": "Не удалось получить ответ",
             "tool_calls": tool_calls,
             "iterations": max_iterations,
-            "error": "max_iterations_reached"
+            "error": "max_iterations_reached",
+            "usage": {"input_tokens": total_input, "output_tokens": total_output},
+            "execution_time": exec_time
         }
     
     async def close(self):

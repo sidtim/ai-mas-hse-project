@@ -1,9 +1,34 @@
 from langchain_core.messages import SystemMessage, HumanMessage
+import time
 from config import get_llm
 from pathlib import Path
 import pickle
-import os
 import pandas as pd
+
+
+# ------------------------------------------------------------
+# Универсальная функция извлечения токенов (совместимость версий)
+# ------------------------------------------------------------
+def _get_token_usage(response):
+    """
+    Извлекает (input_tokens, output_tokens) из AIMessage,
+    совместимо с разными версиями langchain-core.
+    """
+    # Пытаемся взять из usage_metadata (новые версии)
+    if hasattr(response, 'usage_metadata') and response.usage_metadata:
+        inp = response.usage_metadata.get("input_tokens", 0)
+        out = response.usage_metadata.get("output_tokens", 0)
+        return inp, out
+
+    # Запасной вариант: response_metadata['token_usage'] (старые версии)
+    if hasattr(response, 'response_metadata'):
+        token_usage = response.response_metadata.get("token_usage", {})
+        inp = token_usage.get("prompt_tokens", 0)
+        out = token_usage.get("completion_tokens", 0)
+        return inp, out
+
+    return 0, 0
+
 
 # Промпт на русском
 SYSTEM_PROMPT = """Ты генератор математических задач. Придумай ОДНУ задачу по указанной теме.
@@ -79,50 +104,38 @@ class GeneratorAgent:
         return self._dataset
     
     def generate(self, topic: str) -> dict:
+        start = time.time()
         topic_hint = TOPIC_PROMPTS.get(topic, "Составь математическую задачу.")
-        
         messages = [
             SystemMessage(content=SYSTEM_PROMPT),
             HumanMessage(content=f"Тема: {topic}. {topic_hint}")
         ]
-        
         response = self.llm.invoke(messages)
+        exec_time = time.time() - start
+
         text = response.content
-        
         problem, answer = extract_problem_answer(text)
-        
+
+        inp_tokens, out_tokens = _get_token_usage(response)
+        usage = {"input_tokens": inp_tokens, "output_tokens": out_tokens}
+
         return {
             "full_response": text,
             "problem": problem,
-            "ground_truth": answer
+            "ground_truth": answer,
+            "usage": usage,
+            "execution_time": exec_time
         }
     
-    # def generate_static_task(self, topic: str):
-    #     # Путь внутри контейнера
-    #     dataset_path = Path("/app/static_dataset/list_dict_with_tasks_update.pkl")
-        
-    #     with open(dataset_path, "rb") as f:
-    #         df = pickle.load(f)
-
-    #     df = pd.DataFrame(df)
-
-    #     random_task = df.sample(1)
-
-    #     text_task = random_task['problem'].iloc[0]
-    #     answer_task = random_task['answer'].iloc[0]
-
-    #     return {
-    #         "problem": text_task,
-    #         "ground_truth": answer_task
-    #     }
-
     def generate_static_task(self, topic: str, difficulty: str = "средний") -> dict:
-        """Возвращает случайную задачу из статического банка с фильтрацией по теме и сложности."""
+        start = time.time()
         example = self._get_random_example(topic, difficulty)
+        exec_time = time.time() - start
         return {
             "problem": example.get("problem", ""),
             "ground_truth": example.get("answer", ""),
-            # "solution": example.get("solution", "")  # можно добавить, если нужно
+            "usage": {"input_tokens": 0, "output_tokens": 0},
+            "execution_time": exec_time
         }
     
     def _get_random_example(self, topic: str, difficulty: str) -> dict:
@@ -154,20 +167,26 @@ class GeneratorAgent:
             f"Ответ примера: {example_answer}\n\n"
             "Составь новую задачу, следуя инструкциям."
         )
-
         messages = [
             SystemMessage(content=SYSTEM_PROMPT_BY_EXAMPLE),
             HumanMessage(content=prompt)
         ]
-
+        start = time.time()
         response = self.llm.invoke(messages)
-        text = response.content
+        exec_time = time.time() - start
 
+        text = response.content
         problem, answer, solution = self._parse_example_response(text)
+
+        inp_tokens, out_tokens = _get_token_usage(response)
+        usage = {"input_tokens": inp_tokens, "output_tokens": out_tokens}
+
         return {
             "problem": problem,
             "ground_truth": answer,
-            "solution": solution        # подробное решение для внутреннего использования
+            "solution": solution,
+            "usage": usage,
+            "execution_time": exec_time
         }
     
     def _parse_example_response(self, text: str) -> tuple:
@@ -187,8 +206,8 @@ class GeneratorAgent:
 
         if not problem:  # fallback на английские метки или простой разбор
             if "PROBLEM:" in text and "ANSWER:" in text and "SOLUTION:" in text:
-                # аналогичный парсинг для ENG
-                ...
+                # аналогичный парсинг для ENG (не реализован, оставлен как есть)
+                pass
             else:
                 # берём первые три непустые строки (грубо)
                 lines = [l.strip() for l in text.split("\n") if l.strip()]
