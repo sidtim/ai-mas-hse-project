@@ -41,34 +41,68 @@ def root():
         "llm_provider": "OpenAI-compatible API (vsellm.ru)"
     }
 
+# @app.post("/generate", response_model=GenerateResponse)
+# def generate_task(request: GenerateRequest):
+#     """Генерация новой задачи агентом (LLM)"""
+#     logger.info(f"=== НАЧАЛО ГЕНЕРАЦИИ АГЕНТОМ: {request.topic} ===")
+#     try:
+#         from graph.workflow import MathWorkflow
+#         wf = MathWorkflow()
+#         result = wf.generate_only(request.topic)
+#         logger.info(f"УСПЕХ: {result.get('problem', 'НЕТ')[:50]}...")
+        
+#         return GenerateResponse(
+#             problem=result["problem"],
+#             ground_truth=result["ground_truth"]
+#         )
+#     except Exception as e:
+#         logger.error(f"ОШИБКА: {str(e)}", exc_info=True)
+#         raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/generate", response_model=GenerateResponse)
 def generate_task(request: GenerateRequest):
-    """Генерация новой задачи агентом (LLM)"""
-    logger.info(f"=== НАЧАЛО ГЕНЕРАЦИИ АГЕНТОМ: {request.topic} ===")
+    logger.info(f"=== ГЕНЕРАЦИЯ АГЕНТОМ: {request.topic}, сложность {request.difficulty} ===")
     try:
         from graph.workflow import MathWorkflow
         wf = MathWorkflow()
-        result = wf.generate_only(request.topic)
+        result = wf.generate_only(request.topic, request.difficulty)
         logger.info(f"УСПЕХ: {result.get('problem', 'НЕТ')[:50]}...")
-        
+
         return GenerateResponse(
             problem=result["problem"],
             ground_truth=result["ground_truth"]
+            # solution не возвращаем пользователю
         )
     except Exception as e:
         logger.error(f"ОШИБКА: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
+# @app.post("/generate_static", response_model=GenerateResponse)
+# def generate_task_static(request: GenerateRequest):
+#     """Получение случайной задачи из статического банка"""
+#     logger.info(f"=== НАЧАЛО ГЕНЕРАЦИИ ИЗ БАНКА ЗАДАЧ: {request.topic} ===")
+#     try:
+#         from graph.workflow import MathWorkflow
+#         wf = MathWorkflow()
+#         result = wf.generate_only_static(request.topic)
+#         logger.info(f"УСПЕХ: {result.get('problem', 'НЕТ')[:50]}...")
+        
+#         return GenerateResponse(
+#             problem=result["problem"],
+#             ground_truth=result["ground_truth"]
+#         )
+#     except Exception as e:
+#         logger.error(f"ОШИБКА: {str(e)}", exc_info=True)
+#         raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/generate_static", response_model=GenerateResponse)
 def generate_task_static(request: GenerateRequest):
-    """Получение случайной задачи из статического банка"""
-    logger.info(f"=== НАЧАЛО ГЕНЕРАЦИИ ИЗ БАНКА ЗАДАЧ: {request.topic} ===")
+    logger.info(f"=== ГЕНЕРАЦИЯ ИЗ БАНКА ЗАДАЧ: {request.topic}, сложность {request.difficulty} ===")
     try:
         from graph.workflow import MathWorkflow
         wf = MathWorkflow()
-        result = wf.generate_only_static(request.topic)
+        result = wf.generate_only_static(request.topic, request.difficulty)
         logger.info(f"УСПЕХ: {result.get('problem', 'НЕТ')[:50]}...")
-        
         return GenerateResponse(
             problem=result["problem"],
             ground_truth=result["ground_truth"]
@@ -137,6 +171,40 @@ def solve_only(request: SolveRequest):
         logger.error(f"ОШИБКА РЕШЕНИЯ: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
+# @app.post("/full_pipeline")
+# def full_pipeline_endpoint(request: GenerateRequest):
+#     """
+#     [Дополнительный] Полный pipeline: генерация -> решение -> проверка.
+#     Генерирует задачу, решает её и проверяет (сравнивает solver vs ground_truth).
+#     Полезно для тестирования качества модели.
+#     """
+#     logger.info(f"=== ПОЛНЫЙ PIPELINE: {request.topic} ===")
+#     try:
+#         from graph.workflow import MathWorkflow
+#         wf = MathWorkflow()
+        
+#         # Генерируем задачу
+#         gen_result = wf.generate_only(request.topic)
+        
+#         # Решаем и проверяем (сравниваем solver_answer с ground_truth)
+#         result = wf.solve_and_review(
+#             problem=gen_result["problem"],
+#             user_solution="",  # Нет пользовательского ответа
+#             ground_truth=gen_result["ground_truth"]
+#         )
+        
+#         return {
+#             "generated_problem": gen_result["problem"],
+#             "ground_truth": gen_result["ground_truth"],
+#             "solver_answer": result.get("solver_answer", ""),
+#             "solver_full": result.get("solver_full", ""),
+#             "review_verdict": result.get("review_verdict", "НЕИЗВЕСТНО"),
+#             "is_correct": result.get("is_correct", False)
+#         }
+#     except Exception as e:
+#         logger.error(f"ОШИБКА PIPELINE: {str(e)}", exc_info=True)
+#         raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/full_pipeline")
 def full_pipeline_endpoint(request: GenerateRequest):
     """
@@ -144,13 +212,13 @@ def full_pipeline_endpoint(request: GenerateRequest):
     Генерирует задачу, решает её и проверяет (сравнивает solver vs ground_truth).
     Полезно для тестирования качества модели.
     """
-    logger.info(f"=== ПОЛНЫЙ PIPELINE: {request.topic} ===")
+    logger.info(f"=== ПОЛНЫЙ PIPELINE: {request.topic}, сложность {request.difficulty} ===")
     try:
         from graph.workflow import MathWorkflow
         wf = MathWorkflow()
         
         # Генерируем задачу
-        gen_result = wf.generate_only(request.topic)
+        gen_result = wf.generate_only(request.topic, request.difficulty)
         
         # Решаем и проверяем (сравниваем solver_answer с ground_truth)
         result = wf.solve_and_review(

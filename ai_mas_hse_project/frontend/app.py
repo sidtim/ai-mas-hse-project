@@ -69,7 +69,8 @@ col1, col2 = st.columns([2, 1])
 
 with col1:
     # Добавляем "уравнения" в список тем
-    available_topics = ["алгебра", "комбинаторика", "вероятность и статистика", "уравнения"]
+    available_topics = ['алгебра и арифметика', 'комбинаторика', 'олимпиадные задачи',
+                        'математический анализ', 'вероятность и статистика', "уравнения"]
     
     topic = st.selectbox(
         "Тема задачи:",
@@ -130,7 +131,8 @@ if generate_btn_agent:
         try:
             response = requests.post(
                 f"{BACKEND_URL}/generate",
-                json={"topic": topic}
+                json={"topic": topic, 
+                      "difficulty": st.session_state.difficulty} #json={"topic": topic}
             )
             response.raise_for_status()
             data = response.json()
@@ -149,7 +151,8 @@ if generate_btn_static:
         try:
             response = requests.post(
                 f"{BACKEND_URL}/generate_static",
-                json={"topic": topic}
+                json={"topic": topic,
+                      "difficulty": st.session_state.difficulty}
             )
             response.raise_for_status()
             data = response.json()

@@ -2,7 +2,9 @@ from pydantic import BaseModel
 from typing import Optional, Literal
 
 class GenerateRequest(BaseModel):
-    topic: Literal["алгебра", "комбинаторика", "вероятность и статистика"]
+    topic: Literal['алгебра и арифметика', 'комбинаторика', 'олимпиадные задачи',
+                   'математический анализ', 'вероятность и статистика']
+    difficulty: Optional[Literal['легкий', 'средний', 'сложный']] = "средний"
 
 class GenerateResponse(BaseModel):
     problem: str

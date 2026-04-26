@@ -79,13 +79,17 @@ class MathWorkflow:
             "messages": []
         }
     
-    def generate_only(self, topic: str) -> dict:
-        """Только генерация задачи (для первого эндпоинта)"""
-        return self.generator.generate(topic)
+    # def generate_only(self, topic: str) -> dict:
+    #     """Только генерация задачи (для первого эндпоинта)"""
+    #     return self.generator.generate(topic)
+
+    def generate_only(self, topic: str, difficulty: str = "средний") -> dict:
+        """Генерация задачи 'по примеру' с учётом сложности."""
+        return self.generator.generate_by_example(topic, difficulty)
     
-    def generate_only_static(self, topic: str) -> dict:
+    def generate_only_static(self, topic: str, difficulty: str = "средний") -> dict:
         """Только генерация статической задачи (для первого эндпоинта)"""
-        return self.generator.generate_static_task(topic)
+        return self.generator.generate_static_task(topic, difficulty) # return self.generator.generate_static_task(topic)
     
     def full_pipeline(self, topic: str, problem: str, user_solution: str, ground_truth: str) -> dict:
         """Полный pipeline: решение + проверка (без генерации, задача предоставлена извне)"""
