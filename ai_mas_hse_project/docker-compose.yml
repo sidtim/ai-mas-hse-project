@@ -28,6 +28,7 @@ services:
       - .env
     volumes:
       - ./frontend:/app
+      - ./static_dataset:/app/static_dataset   # пробрасываем локальную папку
     depends_on:
       - backend
     environment:

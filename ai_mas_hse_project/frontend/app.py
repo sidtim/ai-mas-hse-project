@@ -2,6 +2,8 @@ import streamlit as st
 import requests
 import os
 import random
+import pickle
+from pathlib import Path
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
@@ -14,39 +16,16 @@ st.set_page_config(
 st.title("🧮 Мультиагентная система для математических задач")
 st.markdown("---")
 
+# ---------- Загрузка MCP-задач ----------
+@st.cache_resource
+def load_mcp_dataset():
+    mcp_path = Path("/app/static_dataset/mcp_equations.pkl")
+    with open(mcp_path, "rb") as f:
+        return pickle.load(f)
+    
 # ============ MCP УРАВНЕНИЯ ============
-MCP_EQUATIONS = [
-    {
-        "id": 1,
-        "problem": "Реши уравнение: x**2 - 5*x + 6 = 0. Какие корни?",
-        "ground_truth": "2, 3",
-        "hint": "Квадратное уравнение"
-    },
-    {
-        "id": 2,
-        "problem": "Найди производную функции f(x) = x**3 + 2*x**2 - 5*x + 1",
-        "ground_truth": "3*x**2 + 4*x - 5",
-        "hint": "Дифференцирование"
-    },
-    {
-        "id": 3,
-        "problem": "Вычисли неопределенный интеграл от 2*x + 3",
-        "ground_truth": "x**2 + 3*x",
-        "hint": "Интегрирование"
-    },
-    {
-        "id": 4,
-        "problem": "Найди среднее значение чисел: 10, 20, 30, 40, 50",
-        "ground_truth": "30",
-        "hint": "Статистика"
-    },
-    {
-        "id": 5,
-        "problem": "Реши систему: сначала найди x из x**2 - 9 = 0, потом проверь, что x > 0",
-        "ground_truth": "3",
-        "hint": "Система уравнений"
-    }
-]
+MCP_EQUATIONS = load_mcp_dataset()
+
 
 # Инициализация состояния
 if "generated" not in st.session_state:
