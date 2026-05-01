@@ -1,7 +1,7 @@
 # Мультиагентная система для генерации и проверки математических задач
 
 <p align="center">
-  <img src="assets/mawas_preview.png" alt="Описание" width="20%" style="max-width: 800px;" />
+  <img src="assets/mawas_preview_small.png" alt="Описание" width="50%" style="max-width: 800px;" />
 </p>
 
 # Описание проекта
