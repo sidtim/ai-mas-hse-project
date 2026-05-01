@@ -3,9 +3,6 @@ import time
 from config import get_llm
 
 
-# ------------------------------------------------------------
-# Универсальная функция извлечения токенов (совместимость версий)
-# ------------------------------------------------------------
 def _get_token_usage(response):
     if hasattr(response, 'usage_metadata') and response.usage_metadata:
         inp = response.usage_metadata.get("input_tokens", 0)

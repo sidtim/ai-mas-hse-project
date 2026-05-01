@@ -5,10 +5,6 @@ from pathlib import Path
 import pickle
 import pandas as pd
 
-
-# ------------------------------------------------------------
-# Универсальная функция извлечения токенов (совместимость версий)
-# ------------------------------------------------------------
 def _get_token_usage(response):
     """
     Извлекает (input_tokens, output_tokens) из AIMessage,
@@ -20,7 +16,6 @@ def _get_token_usage(response):
         out = response.usage_metadata.get("output_tokens", 0)
         return inp, out
 
-    # Запасной вариант: response_metadata['token_usage'] (старые версии)
     if hasattr(response, 'response_metadata'):
         token_usage = response.response_metadata.get("token_usage", {})
         inp = token_usage.get("prompt_tokens", 0)
@@ -30,7 +25,6 @@ def _get_token_usage(response):
     return 0, 0
 
 
-# Промпт на русском
 SYSTEM_PROMPT = """Ты генератор математических задач. Придумай ОДНУ задачу по указанной теме.
 
 Требования:
@@ -63,21 +57,18 @@ def extract_problem_answer(text: str) -> tuple:
     problem = ""
     answer = ""
     
-    # Ищем по-русски
     if "ЗАДАЧА:" in text and "ОТВЕТ:" in text:
         parts = text.split("ОТВЕТ:")
         if len(parts) >= 2:
             problem_part = parts[0]
             answer = parts[1].strip().split("\n")[0]
             problem = problem_part.replace("ЗАДАЧА:", "").strip()
-    # Fallback на английский если модель переключилась
     elif "PROBLEM:" in text and "ANSWER:" in text:
         parts = text.split("ANSWER:")
         if len(parts) >= 2:
             problem = parts[0].replace("PROBLEM:", "").strip()
             answer = parts[1].strip().split("\n")[0]
     
-    # Если не распарсилось — берём всё как задачу, последнее число как ответ
     if not problem:
         lines = [l.strip() for l in text.split("\n") if l.strip() and not l.startswith("Ты ") and not l.startswith("Требования")]
         if len(lines) >= 2:
@@ -142,14 +133,12 @@ class GeneratorAgent:
         """Возвращает случайную задачу из датасета, по возможности с фильтрацией."""
         df = self._load_dataset()
 
-        # Пытаемся фильтровать, если есть соответствующие колонки
         filtered = df
         if "topic" in df.columns:
             filtered = filtered[filtered["topic"].str.lower() == topic.lower()]
         if "complexity_level_text" in df.columns:
             filtered = filtered[filtered["complexity_level_text"].str.lower() == difficulty.lower()]
 
-        # Если после фильтрации ничего не осталось, берём весь датасет
         if filtered.empty:
             filtered = df
 
@@ -206,10 +195,8 @@ class GeneratorAgent:
 
         if not problem:  # fallback на английские метки или простой разбор
             if "PROBLEM:" in text and "ANSWER:" in text and "SOLUTION:" in text:
-                # аналогичный парсинг для ENG (не реализован, оставлен как есть)
                 pass
             else:
-                # берём первые три непустые строки (грубо)
                 lines = [l.strip() for l in text.split("\n") if l.strip()]
                 problem = lines[0] if len(lines) > 0 else text
                 answer = lines[1] if len(lines) > 1 else "неизвестно"

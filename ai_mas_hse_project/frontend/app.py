@@ -8,7 +8,7 @@ import time
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
-# ---------- Цены (примерные) за 1K токенов ----------
+# ---------- Цены за 1K токенов ----------
 PRICE_PER_1K_INPUT = 0.044   # рублей за 1K входных токенов
 PRICE_PER_1K_OUTPUT = 0.066   # рублей за 1K выходных токенов
 

@@ -1,7 +1,3 @@
-"""
-MCP Math Solver Agent - упрощенная версия только с LLM
-"""
-
 import asyncio
 import json
 import os
@@ -16,9 +12,6 @@ from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from config import get_llm
 
 
-# ------------------------------------------------------------
-# Универсальная функция извлечения токенов (совместимость версий)
-# ------------------------------------------------------------
 def _get_token_usage(response):
     if hasattr(response, 'usage_metadata') and response.usage_metadata:
         inp = response.usage_metadata.get("input_tokens", 0)
@@ -79,7 +72,6 @@ class MCPClient:
         
         await self.session.initialize()
         
-        # Получаем инструменты
         tools_result = await self.session.list_tools()
         self.tools = tools_result.tools if hasattr(tools_result, 'tools') else list(tools_result)
         
@@ -210,7 +202,6 @@ class MCPSolverAgent:
             print(f"\n🔄 Итерация {i+1}/{max_iterations}")
             
             response = await self.llm.ainvoke(messages)
-            # Безопасно накапливаем токены
             inp, out = _get_token_usage(response)
             total_input += inp
             total_output += out
@@ -218,10 +209,8 @@ class MCPSolverAgent:
             content = response.content.strip()
             print(f"🤖 LLM: {content[:200]}...")
             
-            # Проверяем вызов инструмента
             if "TOOL_CALL:" in content:
                 try:
-                    # Извлекаем JSON
                     json_str = content.split("TOOL_CALL:")[1].strip()
                     if "\n" in json_str:
                         json_str = json_str.split("\n")[0]
@@ -238,13 +227,11 @@ class MCPSolverAgent:
                         "result": result
                     })
                     
-                    # Добавляем результат в контекст
                     messages.extend([
                         AIMessage(content=content),
                         SystemMessage(content=f"Результат инструмента: {json.dumps(result, ensure_ascii=False)}")
                     ])
                     
-                    # Если получили решение - сразу даем ответ
                     if "solutions" in result or "result" in result:
                         messages.append(HumanMessage(content="Сформулируй FINAL_ANSWER на основе результата"))
                         continue

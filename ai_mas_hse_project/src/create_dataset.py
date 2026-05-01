@@ -210,7 +210,7 @@ def parse_problem(html_content, main_topic):
         if topic_link:
             result["subtopic"] = clean_text(topic_link.get_text())
 
-    # 3. Сложность задачи (НОВОЕ ПОЛЕ)
+    # 3. Сложность задачи
     # Ищем блок со сложностью
     difficulty_cell = soup.find("td", class_="problemdetailsdifficulty")
     if difficulty_cell:

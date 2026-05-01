@@ -23,7 +23,6 @@ class AgentState(TypedDict):
     answer_analysis: str
     solution_analysis: str
     recommendation: str
-    # Дополнительные поля для статистики
     gen_usage: dict
     gen_time: float
     solver_usage: dict
@@ -115,7 +114,6 @@ class MathWorkflow:
         return self.graph.invoke(initial_state)
 
     def solve_and_review(self, problem: str, user_solution: str, ground_truth: str) -> dict:
-        # Временный граф без generate
         builder = StateGraph(AgentState)
         builder.add_node("solve", self._solve_node)
         builder.add_node("review", self._review_node)
@@ -145,11 +143,9 @@ class MathWorkflow:
             "review_time": 0.0,
         }
         result = graph.invoke(initial_state)
-        # result теперь содержит все поля статистики
         return result
 
 
-# ======================= MCP SOLVER ======================= #
 class MCPAgentState(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
     topic: str
@@ -164,7 +160,6 @@ class MCPAgentState(TypedDict):
     answer_analysis: str
     solution_analysis: str
     recommendation: str
-    # статистика
     mcp_usage: dict
     mcp_time: float
     review_usage: dict
@@ -234,7 +229,6 @@ class MCPMathWorkflow:
             "review_time": 0.0,
         }
         result = await self.graph.ainvoke(initial_state)
-        # Для совместимости с main.py собираем общее usage и время
         mcp_usage = result.get("mcp_usage", {})
         review_usage = result.get("review_usage", {})
         total_usage = {

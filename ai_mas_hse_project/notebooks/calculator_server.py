@@ -1,6 +1,5 @@
 """
-Исправленный MCP Math Server (совместимый с текущей версией SDK)
-Сохраните как calculator_server_fixed.py
+Сервер позаимствовал из данного репозитория: https://github.com/huhabla/calculator-mcp-server/
 """
 
 from mcp.server.fastmcp import FastMCP
@@ -11,12 +10,11 @@ from scipy import stats
 from sympy import symbols, solve, sympify, diff, integrate, oo, Sum
 from typing import List, Tuple
 import matplotlib
-matplotlib.use('Agg')  # Не-GUI бэкенд для работы без дисплея
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import sympy as sp
 from sympy import integrate as sympy_integrate
 
-# Create MCP Server - упрощенная инициализация для совместимости
 app = FastMCP("Mathematical Calculator")
 
 TRANSPORT = "sse"
