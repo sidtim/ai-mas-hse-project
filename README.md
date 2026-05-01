@@ -74,7 +74,8 @@ ai-mas-hse-project
 │  ├─ src
 │  │  └─ create_dataset.py
 │  └─ static_dataset
-│     └─ list_dict_with_tasks.pkl
+│     └─ list_dict_with_tasks_update.pkl
+│     └─ mcp_equations.pkl
 ├─ poetry.lock
 ├─ pyproject.toml
 ├─ references
