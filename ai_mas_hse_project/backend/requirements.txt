@@ -1,0 +1,13 @@
+# Этот файл теперь опционален, но пусть будет для справки
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+python-dotenv==1.0.0
+numpy==1.24.3
+torch==2.0.1
+transformers==4.37.2
+accelerate==0.26.1
+langgraph==0.0.48
+langchain-core==0.1.18
+langchain-huggingface==0.0.3
+pandas

@@ -1,0 +1,36 @@
+from pydantic import BaseModel
+from typing import Optional, Literal
+
+class GenerateRequest(BaseModel):
+    topic: Literal['алгебра и арифметика', 'комбинаторика', 'олимпиадные задачи',
+                   'математический анализ', 'вероятность и статистика']
+    difficulty: Optional[Literal['легкий', 'средний', 'сложный']] = "средний"
+
+class GenerateResponse(BaseModel):
+    problem: str
+    ground_truth: str
+    generation_time_seconds: Optional[float] = None
+    input_tokens: Optional[int] = 0
+    output_tokens: Optional[int] = 0
+
+class SolveRequest(BaseModel):
+    problem: str
+    user_solution: str
+    ground_truth: Optional[str] = None
+
+class AgentResult(BaseModel):
+    solver_answer: str
+    reviewer_verdict: str
+    is_correct: bool
+    answer_analysis: Optional[str] = None
+    solution_analysis: Optional[str] = None
+    recommendation: Optional[str] = None
+    generation_time_seconds: Optional[float] = None   # общее время на обработку запроса
+    input_tokens: Optional[int] = 0
+    output_tokens: Optional[int] = 0
+    
+
+class SolveResponse(BaseModel):
+    problem: str
+    user_solution: str
+    agent_analysis: AgentResult

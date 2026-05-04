@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: math-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - TEMPERATURE=${TEMPERATURE:-0.7}
+      - MAX_TOKENS=${MAX_TOKENS:-2000}
+      - MODEL_ID=${MODEL_ID:-deepseek/deepseek-v3.2}
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./backend:/app
+      - ./calculator_server.py:/app/calculator_server.py  # <-- Добавить MCP сервер
+      - model-cache:/root/.cache/huggingface
+      - ./static_dataset:/app/static_dataset
+
+  frontend:
+    build: ./frontend
+    container_name: math-frontend
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    volumes:
+      - ./frontend:/app
+      - ./static_dataset:/app/static_dataset   # пробрасываем локальную папку
+    depends_on:
+      - backend
+    environment:
+      - BACKEND_URL=http://backend:8000
+
+volumes:
+  model-cache:
